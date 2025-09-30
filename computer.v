@@ -22,7 +22,7 @@ module computer(clk, alu_out_bus);
                  .load(im_out_bus[7]),
                  .out(regB_out_bus));
    mux2 muxB(.e0(regB_out_bus), 
-             .e1(im_out_bus[3:0]), 
+             .e1({4'b0000, im_out_bus[3:0]}), 
              .c(im_out_bus[8]),
              .out(muxB_out_bus));
    alu ALU(.a(regA_out_bus),
