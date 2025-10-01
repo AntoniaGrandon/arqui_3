@@ -1,5 +1,5 @@
 $date
-	Tue Sep 30 20:06:51 2025
+	Wed Oct  1 11:45:42 2025
 $end
 $version
 	Icarus Verilog
@@ -8,47 +8,51 @@ $timescale
 	1s
 $end
 $scope module test $end
-$var wire 8 ! alu_out_bus [7:0] $end
-$var reg 1 " cl $end
+$var wire 8 ! regA_out [7:0] $end
+$var wire 8 " regB_out [7:0] $end
+$var reg 1 # add_test_failed $end
+$var reg 1 $ clk $end
+$var reg 1 % mov_test_failed $end
+$var reg 1 & shl_test_failed $end
 $scope module Comp $end
-$var wire 1 " clk $end
-$var wire 8 # regB_out_bus [7:0] $end
-$var wire 8 $ regA_out_bus [7:0] $end
-$var wire 4 % pc_out_bus [3:0] $end
-$var wire 8 & muxB_out_bus [7:0] $end
-$var wire 9 ' im_out_bus [8:0] $end
-$var wire 8 ( alu_out_bus [7:0] $end
+$var wire 1 $ clk $end
+$var wire 8 ' regB_out_bus [7:0] $end
+$var wire 8 ( regA_out_bus [7:0] $end
+$var wire 4 ) pc_out_bus [3:0] $end
+$var wire 8 * muxB_out_bus [7:0] $end
+$var wire 9 + im_out_bus [8:0] $end
+$var wire 8 , alu_out_bus [7:0] $end
 $scope module ALU $end
-$var wire 2 ) s [1:0] $end
-$var wire 8 * b [7:0] $end
-$var wire 8 + a [7:0] $end
-$var reg 8 , out [7:0] $end
+$var wire 2 - s [1:0] $end
+$var wire 8 . b [7:0] $end
+$var wire 8 / a [7:0] $end
+$var reg 8 0 out [7:0] $end
 $upscope $end
 $scope module IM $end
-$var wire 9 - out [8:0] $end
-$var wire 4 . address [3:0] $end
+$var wire 9 1 out [8:0] $end
+$var wire 4 2 address [3:0] $end
 $upscope $end
 $scope module PC $end
-$var wire 1 " clk $end
-$var reg 4 / pc [3:0] $end
+$var wire 1 $ clk $end
+$var reg 4 3 pc [3:0] $end
 $upscope $end
 $scope module muxB $end
-$var wire 1 0 c $end
-$var wire 8 1 e1 [7:0] $end
-$var wire 8 2 e0 [7:0] $end
-$var reg 8 3 out [7:0] $end
+$var wire 1 4 c $end
+$var wire 8 5 e1 [7:0] $end
+$var wire 8 6 e0 [7:0] $end
+$var reg 8 7 out [7:0] $end
 $upscope $end
 $scope module regA $end
-$var wire 1 " clk $end
-$var wire 8 4 data [7:0] $end
-$var wire 1 5 load $end
-$var reg 8 6 out [7:0] $end
+$var wire 1 $ clk $end
+$var wire 8 8 data [7:0] $end
+$var wire 1 9 load $end
+$var reg 8 : out [7:0] $end
 $upscope $end
 $scope module regB $end
-$var wire 1 " clk $end
-$var wire 8 7 data [7:0] $end
-$var wire 1 8 load $end
-$var reg 8 9 out [7:0] $end
+$var wire 1 $ clk $end
+$var wire 8 ; data [7:0] $end
+$var wire 1 < load $end
+$var reg 8 = out [7:0] $end
 $upscope $end
 $upscope $end
 $upscope $end
@@ -58,109 +62,162 @@ $dumpall
 $end
 #0
 $dumpvars
-b0 9
-18
-b11 7
+b0 =
+0<
+b0 ;
+b0 :
+09
+b0 8
+b0 7
 b0 6
-05
-b11 4
-b11 3
+b1010 5
+04
+b0 3
 b0 2
-b11 1
-10
+b101010 1
+b0 0
 b0 /
 b0 .
-b110000011 -
-b11 ,
-b0 +
-b11 *
+b10 -
+b0 ,
+b101010 +
+b0 *
 b0 )
-b11 (
-b110000011 '
-b11 &
-b0 %
-b0 $
-b0 #
-0"
-b11 !
+b0 (
+b0 '
+0&
+0%
+0$
+0#
+b0 "
+b0 !
 $end
 #1
-b110 !
-b110 (
-b110 ,
-b110 4
-b110 7
-b110 &
-b110 *
-b110 3
-b110 1
-08
-15
-b101000110 '
-b101000110 -
-b1 %
-b1 .
-b1 /
-b11 #
-b11 2
-b11 9
-1"
-#2
-0"
-#3
-b11 &
-b11 *
-b11 3
-b11 !
-b11 (
-b11 ,
-b11 4
-b11 7
+b1011 ,
+b1011 0
+b1011 8
+b1011 ;
+b1011 *
+b1011 .
+b1011 7
+b11 -
+14
+b1011 5
+19
+b101111011 +
+b101111011 1
 b1 )
-00
-b0 1
-18
-05
-b110 $
-b110 +
-b110 6
-b10010000 '
-b10010000 -
-b10 %
-b10 .
-b10 /
-1"
-#4
-0"
-#5
-b10 !
-b10 (
-b10 ,
-b10 4
-b10 7
-b10 )
-08
-15
-b1100000 '
-b1100000 -
-b11 %
-b11 .
-b11 /
-1"
-#6
-0"
-#7
-bx )
-x0
-b0xxxx 1
-x8
-x5
-b10 $
+b1 2
+b1 3
+1$
+#2
+0$
+#3
+b0 *
+b0 .
+b0 7
+b1011 ,
+b1011 0
+b1011 8
+b1011 ;
+b0 -
+04
+b10 5
+09
+b1011 !
+b1011 (
+b1011 /
+b1011 :
 b10 +
-b10 6
-bx '
+b10 1
+b10 )
+b10 2
+b10 3
+1$
+1%
+#4
+0$
+#5
+b1110 ,
+b1110 0
+b1110 8
+b1110 ;
+b11 *
+b11 .
+b11 7
+14
+b11 5
+b100000011 +
+b100000011 1
+b11 )
+b11 2
+b11 3
+1$
+#6
+0$
+#7
+b1011 ,
+b1011 0
+b1011 8
+b1011 ;
+b0 *
+b0 .
+b0 7
+04
+b0 5
+b0 +
+b0 1
+b100 )
+b100 2
+b100 3
+1$
+1#
+#8
+0$
+#9
+b101 5
+b101 +
+b101 1
+b101 )
+b101 2
+b101 3
+1$
+#10
+0$
+#11
+b0 5
+b0 +
+b0 1
+b110 )
+b110 2
+b110 3
+1$
+#12
+0$
+#13
 bx -
-b100 %
-b100 .
-b100 /
-1"
+x4
+b0xxxx 5
+x<
+x9
+bx +
+bx 1
+b111 )
+b111 2
+b111 3
+1$
+1&
+#14
+0$
+#15
+b1000 )
+b1000 2
+b1000 3
+1$
+#16
+0$
+#17
+b1001 )
+b1001 2
+b1001 3
+1$
