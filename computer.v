@@ -2,8 +2,8 @@ module computer(
    input clk,
    output [7:0] alu_out_bus,
    output [7:0] regA_out_bus,
-   output [7:0] regB_out_bus,
-)
+   output [7:0] regB_out_bus
+);
    // Recominedo pasar todas estas señales para afuera para poder ser vistas en el waveform
    wire [3:0]   pc_out_bus;
    wire [8:0]   im_out_bus;
