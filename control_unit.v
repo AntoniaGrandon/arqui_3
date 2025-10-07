@@ -1,29 +1,30 @@
 module control_unit(
     input [6:0] opcode, // opcode de 7 bits (im_out_bus[14:8])
     output reg [3:0] alu_op,
+    output reg muxA_sel,
     output reg muxB_sel,
     output reg regA_load,
     output reg regB_load
 );
     always @(*) begin
         case (opcode)
-            // MOV A, B (opcode 0000000)
+            // MOV A, B 
             7'b0000000: begin
-                alu_op    = 4'b1001; 
-                muxA_sel = 0;
-                muxB_sel  = 0;
+                alu_op    = 4'b0000; 
+                muxA_sel = 1;
+                muxB_sel  = 1;
                 regA_load = 1;
                 regB_load = 0;
             end
-            // MOV B, A (opcode 0000001)
+            // MOV B, A 
             7'b0000001: begin
-                alu_op    = 4'b1001; 
+                alu_op    = 4'b0000; 
                 muxA_sel = 0;
-                muxB_sel  = 0;
+                muxB_sel  = 1;
                 regA_load = 0;
                 regB_load = 1;
             end
-            // MOV A, Lit (opcode 0000010)
+            // MOV A, Lit 
             7'b0000010: begin
                 alu_op    = 4'b1001; 
                 muxA_sel = 0;
@@ -31,7 +32,7 @@ module control_unit(
                 regA_load = 1;
                 regB_load = 0;
             end
-            // MOV B, Lit (opcode 0000011)
+            // MOV B, Lit 
             7'b0000011: begin
                 alu_op    = 4'b1001; 
                 muxA_sel = 0;
@@ -40,7 +41,7 @@ module control_unit(
                 regB_load = 1;
             end
 
-            // ADD A, B (opcode 0000100)
+            // ADD A, B 
             7'b0000100: begin
                 alu_op    = 4'b0000; 
                 muxA_sel  = 0;
@@ -174,7 +175,7 @@ module control_unit(
 
             // NOT A, A
             7'b0010100: begin
-                alu_op    = 4'b0100; // not
+                alu_op    = 4'b0100; 
                 muxA_sel = 0;
                 muxB_sel = 0;
                 regA_load = 1;
@@ -182,7 +183,7 @@ module control_unit(
             end
             // NOT A, B
             7'b0010101: begin
-                alu_op    = 4'b0100; // not
+                alu_op    = 4'b0100; 
                 muxA_sel = 1;
                 muxB_sel = 0;
                 regA_load = 1;
@@ -190,7 +191,7 @@ module control_unit(
             end
             // NOT B, A
             7'b0010110: begin
-                alu_op    = 4'b0100; // not
+                alu_op    = 4'b0100; 
                 muxA_sel = 0;
                 muxB_sel = 0;
                 regA_load = 0;
@@ -198,7 +199,7 @@ module control_unit(
             end
             // NOT B, B
             7'b0010111: begin
-                alu_op    = 4'b0100; // not
+                alu_op    = 4'b0100; 
                 muxA_sel = 1;
                 muxB_sel = 0;
                 regA_load = 0;
@@ -238,7 +239,7 @@ module control_unit(
                 regB_load = 1;
             end
 
-            // SHL A, A (opcode 0011100)
+            // SHL A, A 
             7'b0011100: begin
                 alu_op    = 4'b0110; // shift left
                 muxA_sel = 0;
@@ -248,7 +249,7 @@ module control_unit(
             end
             // SHL A, B
             7'b0011101: begin
-                alu_op    = 4'b0110; // shift left
+                alu_op    = 4'b0110; 
                 muxA_sel = 1;
                 muxB_sel = 0;
                 regA_load = 1;
@@ -256,7 +257,7 @@ module control_unit(
             end
             // SHL B, A
             7'b0011110: begin
-                alu_op    = 4'b0110; // shift left
+                alu_op    = 4'b0110; 
                 muxA_sel = 0;
                 muxB_sel = 0;
                 regA_load = 0;
@@ -264,7 +265,7 @@ module control_unit(
             end
             // SHL B, B
             7'b0011111: begin
-                alu_op    = 4'b0110; // shift left
+                alu_op    = 4'b0110;
                 muxA_sel = 1;
                 muxB_sel = 0;
                 regA_load = 0;
@@ -281,7 +282,7 @@ module control_unit(
             end
             // SHR A, B
             7'b0100001: begin
-                alu_op    = 4'b0111; // shift right
+                alu_op    = 4'b0111;
                 muxA_sel = 1;
                 muxB_sel = 0;
                 regA_load = 1;
@@ -289,7 +290,7 @@ module control_unit(
             end
             // SHR B, A
             7'b0100010: begin
-                alu_op    = 4'b0111; // shift right
+                alu_op    = 4'b0111;
                 muxA_sel = 0;
                 muxB_sel = 0;
                 regA_load = 0;
@@ -297,7 +298,7 @@ module control_unit(
             end
             // SHR B, B
             7'b0100011: begin
-                alu_op    = 4'b0111; // shift right
+                alu_op    = 4'b0111;
                 muxA_sel = 1;
                 muxB_sel = 0;
                 regA_load = 0;
@@ -306,7 +307,7 @@ module control_unit(
 
             // INC B
             7'b0100100: begin
-                alu_op    = 4'b1000; // increment
+                alu_op    = 4'b1000;    //increment
                 muxA_sel = 1;
                 muxB_sel = 0;
                 regA_load = 0;
