@@ -392,334 +392,415 @@ module control_unit(
 
             // ========== Instrucciones con Direccionamiento ==========
             
-            // MOV A, [Dir] - A = Mem[Lit]
+            // MOV A, (Dir)
             7'b0100101: begin
-                alu_op    = 4'b1001;    // MOV
-                muxA_sel  = 0;          // No importa
-                muxB_sel  = 2'b10;      // Memoria
+                alu_op    = 4'b1001;
+                muxA_sel  = 0;
+                muxB_sel  = 2'b10;
                 regA_load = 1;
                 regB_load = 0;
                 mem_write = 0;
-                addr_sel  = 0;          // Directo (literal)
+                addr_sel  = 0;
             end
-            
-            // MOV B, [Dir] - B = Mem[Lit]
+            // MOV B, (Dir)
             7'b0100110: begin
-                alu_op    = 4'b1001;    // MOV
-                muxA_sel  = 0;          // No importa
-                muxB_sel  = 2'b10;      // Memoria
+                alu_op    = 4'b1001;
+                muxA_sel  = 0;
+                muxB_sel  = 2'b10;
                 regA_load = 0;
                 regB_load = 1;
                 mem_write = 0;
-                addr_sel  = 0;          // Directo (literal)
+                addr_sel  = 0;
             end
-            
-            // MOV [Dir], A - Mem[Lit] = A
+            // MOV (Dir), A
             7'b0100111: begin
-                alu_op    = 4'b0000;    // ADD (A+0)
-                muxA_sel  = 0;          // regA
-                muxB_sel  = 2'b01;      // Literal (0)
-                regA_load = 0;          // No cargar registros
+                alu_op    = 4'b0000;
+                muxA_sel  = 0;
+                muxB_sel  = 2'b01;
+                regA_load = 0;
                 regB_load = 0;
-                mem_write = 1;          // Escribir en memoria
-                addr_sel  = 0;          // Directo (literal)
+                mem_write = 1;
+                addr_sel  = 0;
             end
-            
-            // MOV [Dir], B - Mem[Lit] = B
+            // MOV (Dir), B
             7'b0101000: begin
-                alu_op    = 4'b1001;    // MOV
-                muxA_sel  = 1;          // regB
-                muxB_sel  = 2'b00;      // No importa
-                regA_load = 0;          // No cargar registros
+                alu_op    = 4'b1001;
+                muxA_sel  = 1;
+                muxB_sel  = 2'b00;
+                regA_load = 0;
                 regB_load = 0;
-                mem_write = 1;          // Escribir en memoria
-                addr_sel  = 0;          // Directo (literal)
+                mem_write = 1;
+                addr_sel  = 0;
             end
-            
-            // MOV A, [B] - A = Mem[B]
+            // MOV A, (B)
             7'b0101001: begin
-                alu_op    = 4'b1001;    // MOV
-                muxA_sel  = 0;          // No importa
-                muxB_sel  = 2'b10;      // Memoria
+                alu_op    = 4'b1001;
+                muxA_sel  = 0;
+                muxB_sel  = 2'b10;
                 regA_load = 1;
                 regB_load = 0;
                 mem_write = 0;
-                addr_sel  = 1;          // Indirecto (regB)
+                addr_sel  = 1;
             end
-            
-            // MOV B, [B] - B = Mem[B]
+            // MOV B, (B)
             7'b0101010: begin
-                alu_op    = 4'b1001;    // MOV
-                muxA_sel  = 0;          // No importa
-                muxB_sel  = 2'b10;      // Memoria
+                alu_op    = 4'b1001;
+                muxA_sel  = 0;
+                muxB_sel  = 2'b10;
                 regA_load = 0;
                 regB_load = 1;
                 mem_write = 0;
-                addr_sel  = 1;          // Indirecto (regB)
+                addr_sel  = 1;
             end
-            
-            // MOV [B], A - Mem[B] = A
+            // MOV (B), A
             7'b0101011: begin
-                alu_op    = 4'b0000;    // ADD (A+0)
-                muxA_sel  = 0;          // regA
-                muxB_sel  = 2'b01;      // Literal (0)
-                regA_load = 0;          // No cargar registros
+                alu_op    = 4'b0000;
+                muxA_sel  = 0;
+                muxB_sel  = 2'b01;
+                regA_load = 0;
                 regB_load = 0;
-                mem_write = 1;          // Escribir en memoria
-                addr_sel  = 1;          // Indirecto (regB)
+                mem_write = 1;
+                addr_sel  = 1;
             end
             
-            // ADD A, [Dir] - A = A + Mem[Lit]
+            // ADD A, (Dir)
             7'b0101100: begin
-                alu_op    = 4'b0000;    // ADD
-                muxA_sel  = 0;          // regA
-                muxB_sel  = 2'b10;      // Memoria
+                alu_op    = 4'b0000;
+                muxA_sel  = 0;
+                muxB_sel  = 2'b10;
                 regA_load = 1;
                 regB_load = 0;
                 mem_write = 0;
-                addr_sel  = 0;          // Directo (literal)
+                addr_sel  = 0;
             end
-            
-            // ADD B, [Dir] - B = B + Mem[Lit]
+            // ADD B, (Dir)
             7'b0101101: begin
-                alu_op    = 4'b0000;    // ADD
-                muxA_sel  = 1;          // regB
-                muxB_sel  = 2'b10;      // Memoria
+                alu_op    = 4'b0000;
+                muxA_sel  = 1;
+                muxB_sel  = 2'b10;
                 regA_load = 0;
                 regB_load = 1;
                 mem_write = 0;
-                addr_sel  = 0;          // Directo (literal)
+                addr_sel  = 0;
             end
-            
-            // ADD A, [B] - A = A + Mem[B]
+            // ADD A, (B)
             7'b0101110: begin
-                alu_op    = 4'b0000;    // ADD
-                muxA_sel  = 0;          // regA
-                muxB_sel  = 2'b10;      // Memoria
+                alu_op    = 4'b0000;
+                muxA_sel  = 0;
+                muxB_sel  = 2'b10;
                 regA_load = 1;
                 regB_load = 0;
                 mem_write = 0;
-                addr_sel  = 1;          // Indirecto (regB)
+                addr_sel  = 1;
             end
-            
-            // ADD [Dir] - Mem[Lit] = A + B
+            // ADD (Dir)
             7'b0101111: begin
-                alu_op    = 4'b0000;    // ADD
-                muxA_sel  = 0;          // regA
-                muxB_sel  = 2'b00;      // regB
-                regA_load = 0;          // No cargar registros
+                alu_op    = 4'b0000;
+                muxA_sel  = 0;
+                muxB_sel  = 2'b00;
+                regA_load = 0;
                 regB_load = 0;
-                mem_write = 1;          // Escribir en memoria
-                addr_sel  = 0;          // Directo (literal)
+                mem_write = 1;
+                addr_sel  = 0;
             end
             
-            // SUB A, [Dir] - A = A - Mem[Lit]
+            // SUB A, (Dir)
             7'b0110000: begin
-                alu_op    = 4'b0001;    // SUB
-                muxA_sel  = 0;          // regA
-                muxB_sel  = 2'b10;      // Memoria
+                alu_op    = 4'b0001;
+                muxA_sel  = 0;
+                muxB_sel  = 2'b10;
                 regA_load = 1;
                 regB_load = 0;
                 mem_write = 0;
-                addr_sel  = 0;          // Directo (literal)
+                addr_sel  = 0;
             end
-            
-            // SUB B, [Dir] - B = B - Mem[Lit]
+            // SUB B, (Dir)
             7'b0110001: begin
-                alu_op    = 4'b0001;    // SUB
-                muxA_sel  = 1;          // regB
-                muxB_sel  = 2'b10;      // Memoria
+                alu_op    = 4'b0001;
+                muxA_sel  = 1;
+                muxB_sel  = 2'b10;
                 regA_load = 0;
                 regB_load = 1;
                 mem_write = 0;
-                addr_sel  = 0;          // Directo (literal)
+                addr_sel  = 0;
             end
-            
-            // SUB A, [B] - A = A - Mem[B]
+            // SUB A, (B)
             7'b0110010: begin
-                alu_op    = 4'b0001;    // SUB
-                muxA_sel  = 0;          // regA
-                muxB_sel  = 2'b10;      // Memoria
+                alu_op    = 4'b0001;
+                muxA_sel  = 0;
+                muxB_sel  = 2'b10;
                 regA_load = 1;
                 regB_load = 0;
                 mem_write = 0;
-                addr_sel  = 1;          // Indirecto (regB)
+                addr_sel  = 1;
             end
-            
-            // SUB [Dir] - Mem[Lit] = A - B
+            // SUB (Dir)
             7'b0110011: begin
-                alu_op    = 4'b0001;    // SUB
-                muxA_sel  = 0;          // regA
-                muxB_sel  = 2'b00;      // regB
-                regA_load = 0;          // No cargar registros
+                alu_op    = 4'b0001;
+                muxA_sel  = 0;
+                muxB_sel  = 2'b00;
+                regA_load = 0;
                 regB_load = 0;
-                mem_write = 1;          // Escribir en memoria
-                addr_sel  = 0;          // Directo (literal)
+                mem_write = 1;
+                addr_sel  = 0;
             end
-            
-            // AND A, [Dir] - A = A & Mem[Lit]
+
+            // AND A, (Dir)
             7'b0110100: begin
-                alu_op    = 4'b0010;    // AND
-                muxA_sel  = 0;          // regA
-                muxB_sel  = 2'b10;      // Memoria
+                alu_op    = 4'b0010;
+                muxA_sel  = 0;
+                muxB_sel  = 2'b10;
                 regA_load = 1;
                 regB_load = 0;
                 mem_write = 0;
-                addr_sel  = 0;          // Directo (literal)
+                addr_sel  = 0;
             end
-            
-            // AND B, [Dir] - B = B & Mem[Lit]
+            // AND B, (Dir)
             7'b0110101: begin
-                alu_op    = 4'b0010;    // AND
-                muxA_sel  = 1;          // regB
-                muxB_sel  = 2'b10;      // Memoria
+                alu_op    = 4'b0010;
+                muxA_sel  = 1;
+                muxB_sel  = 2'b10;
                 regA_load = 0;
                 regB_load = 1;
                 mem_write = 0;
-                addr_sel  = 0;          // Directo (literal)
+                addr_sel  = 0;
             end
-            
-            // AND A, [B] - A = A & Mem[B]
+            // AND A, (B)
             7'b0110110: begin
-                alu_op    = 4'b0010;    // AND
-                muxA_sel  = 0;          // regA
-                muxB_sel  = 2'b10;      // Memoria
+                alu_op    = 4'b0010;
+                muxA_sel  = 0;
+                muxB_sel  = 2'b10;
                 regA_load = 1;
                 regB_load = 0;
                 mem_write = 0;
-                addr_sel  = 1;          // Indirecto (regB)
+                addr_sel  = 1;
             end
-            
-            // AND [Dir] - Mem[Lit] = A & B
+            // AND (Dir)
             7'b0110111: begin
-                alu_op    = 4'b0010;    // AND
-                muxA_sel  = 0;          // regA
-                muxB_sel  = 2'b00;      // regB
-                regA_load = 0;          // No cargar registros
+                alu_op    = 4'b0010;
+                muxA_sel  = 0;
+                muxB_sel  = 2'b00;
+                regA_load = 0;
                 regB_load = 0;
-                mem_write = 1;          // Escribir en memoria
-                addr_sel  = 0;          // Directo (literal)
+                mem_write = 1;
+                addr_sel  = 0;
             end
             
-            // OR A, [Dir] - A = A | Mem[Lit]
+            // OR A, (Dir)
             7'b0111000: begin
-                alu_op    = 4'b0011;    // OR
-                muxA_sel  = 0;          // regA
-                muxB_sel  = 2'b10;      // Memoria
+                alu_op    = 4'b0011;
+                muxA_sel  = 0;
+                muxB_sel  = 2'b10;
                 regA_load = 1;
                 regB_load = 0;
                 mem_write = 0;
-                addr_sel  = 0;          // Directo (literal)
+                addr_sel  = 0;
             end
-            
-            // OR B, [Dir] - B = B | Mem[Lit]
+            // OR B, (Dir)
             7'b0111001: begin
-                alu_op    = 4'b0011;    // OR
-                muxA_sel  = 1;          // regB
-                muxB_sel  = 2'b10;      // Memoria
+                alu_op    = 4'b0011;
+                muxA_sel  = 1;
+                muxB_sel  = 2'b10;
                 regA_load = 0;
                 regB_load = 1;
                 mem_write = 0;
-                addr_sel  = 0;          // Directo (literal)
+                addr_sel  = 0;
             end
-            
-            // OR A, [B] - A = A | Mem[B]
+            // OR A, (B)
             7'b0111010: begin
-                alu_op    = 4'b0011;    // OR
-                muxA_sel  = 0;          // regA
-                muxB_sel  = 2'b10;      // Memoria
+                alu_op    = 4'b0011;
+                muxA_sel  = 0;
+                muxB_sel  = 2'b10;
                 regA_load = 1;
                 regB_load = 0;
                 mem_write = 0;
-                addr_sel  = 1;          // Indirecto (regB)
+                addr_sel  = 1;
             end
-            
-            // OR [Dir] - Mem[Lit] = A | B
+            // OR (Dir)
             7'b0111011: begin
-                alu_op    = 4'b0011;    // OR
-                muxA_sel  = 0;          // regA
-                muxB_sel  = 2'b00;      // regB
-                regA_load = 0;          // No cargar registros
+                alu_op    = 4'b0011;
+                muxA_sel  = 0;
+                muxB_sel  = 2'b00;
+                regA_load = 0;
                 regB_load = 0;
-                mem_write = 1;          // Escribir en memoria
-                addr_sel  = 0;          // Directo (literal)
+                mem_write = 1;
+                addr_sel  = 0;
             end
             
-            // NOT [Dir], A - Mem[Lit] = ~A
+            // NOT (Dir), A
             7'b0111100: begin
-                alu_op    = 4'b0100;    // NOT
-                muxA_sel  = 0;          // regA
-                muxB_sel  = 2'b00;      // No importa
-                regA_load = 0;          // No cargar registros
+                alu_op    = 4'b0100;
+                muxA_sel  = 0;
+                muxB_sel  = 2'b00;
+                regA_load = 0;
                 regB_load = 0;
-                mem_write = 1;          // Escribir en memoria
-                addr_sel  = 0;          // Directo (literal)
+                mem_write = 1;
+                addr_sel  = 0;
             end
-            
-            // NOT [Dir], B - Mem[Lit] = ~B
+            // NOT (Dir), B
             7'b0111101: begin
-                alu_op    = 4'b0100;    // NOT
-                muxA_sel  = 1;          // regB
-                muxB_sel  = 2'b00;      // No importa
-                regA_load = 0;          // No cargar registros
+                alu_op    = 4'b0100;
+                muxA_sel  = 1;
+                muxB_sel  = 2'b00;
+                regA_load = 0;
                 regB_load = 0;
-                mem_write = 1;          // Escribir en memoria
-                addr_sel  = 0;          // Directo (literal)
+                mem_write = 1;
+                addr_sel  = 0;
             end
-            
-            // NOT [B] - Mem[B] = ~A
+            // NOT (B)
             7'b0111110: begin
-                alu_op    = 4'b0100;    // NOT
-                muxA_sel  = 0;          // regA
-                muxB_sel  = 2'b00;      // No importa
-                regA_load = 0;          // No cargar registros
+                alu_op    = 4'b0100;
+                muxA_sel  = 0;
+                muxB_sel  = 2'b00;
+                regA_load = 0;
                 regB_load = 0;
-                mem_write = 1;          // Escribir en memoria
-                addr_sel  = 1;          // Indirecto (regB)
+                mem_write = 1;
+                addr_sel  = 1;
             end
             
-            // XOR A, [Dir] - A = A ^ Mem[Lit]
+            // XOR A, (Dir)
             7'b0111111: begin
-                alu_op    = 4'b0101;    // XOR
-                muxA_sel  = 0;          // regA
-                muxB_sel  = 2'b10;      // Memoria
+                alu_op    = 4'b0101;
+                muxA_sel  = 0;
+                muxB_sel  = 2'b10;
                 regA_load = 1;
                 regB_load = 0;
                 mem_write = 0;
-                addr_sel  = 0;          // Directo (literal)
+                addr_sel  = 0;
             end
-            
-            // XOR B, [Dir] - B = B ^ Mem[Lit]
+            // XOR B, (Dir)
             7'b1000000: begin
-                alu_op    = 4'b0101;    // XOR
-                muxA_sel  = 1;          // regB
-                muxB_sel  = 2'b10;      // Memoria
+                alu_op    = 4'b0101;
+                muxA_sel  = 1;
+                muxB_sel  = 2'b10;
                 regA_load = 0;
                 regB_load = 1;
                 mem_write = 0;
-                addr_sel  = 0;          // Directo (literal)
+                addr_sel  = 0;
             end
-            
-            // XOR A, [B] - A = A ^ Mem[B]
+            // XOR A, (B)
             7'b1000001: begin
-                alu_op    = 4'b0101;    // XOR
-                muxA_sel  = 0;          // regA
-                muxB_sel  = 2'b10;      // Memoria
+                alu_op    = 4'b0101;
+                muxA_sel  = 0;
+                muxB_sel  = 2'b10;
                 regA_load = 1;
                 regB_load = 0;
                 mem_write = 0;
-                addr_sel  = 1;          // Indirecto (regB)
+                addr_sel  = 1;
+            end
+            // XOR (Dir)
+            7'b1000010: begin
+                alu_op    = 4'b0101;
+                muxA_sel  = 0;
+                muxB_sel  = 2'b00;
+                regA_load = 0;
+                regB_load = 0;
+                mem_write = 1;
+                addr_sel  = 0;
             end
             
-            // XOR [Dir] - Mem[Lit] = A ^ B
-            7'b1000010: begin
-                alu_op    = 4'b0101;    // XOR
-                muxA_sel  = 0;          // regA
-                muxB_sel  = 2'b00;      // regB
-                regA_load = 0;          // No cargar registros
+            // SHL (Dir), A
+            7'b1000011: begin
+                alu_op    = 4'b0110;
+                muxA_sel  = 0;
+                muxB_sel  = 2'b00;
+                regA_load = 0;
                 regB_load = 0;
-                mem_write = 1;          // Escribir en memoria
-                addr_sel  = 0;          // Directo (literal)
+                mem_write = 1;
+                addr_sel  = 0;
+            end
+            // SHL (Dir), B
+            7'b1000100: begin
+                alu_op    = 4'b0110;
+                muxA_sel  = 1;
+                muxB_sel  = 2'b00;
+                regA_load = 0;
+                regB_load = 0;
+                mem_write = 1;
+                addr_sel  = 0;
+            end
+            // SHL (B)
+            7'b1000101: begin
+                alu_op    = 4'b0110;
+                muxA_sel  = 0;
+                muxB_sel  = 2'b00;
+                regA_load = 0;
+                regB_load = 0;
+                mem_write = 1;
+                addr_sel  = 1;
+            end
+            
+            // SHR (Dir), A
+            7'b1000110: begin
+                alu_op    = 4'b0111;
+                muxA_sel  = 0;
+                muxB_sel  = 2'b00;
+                regA_load = 0;
+                regB_load = 0;
+                mem_write = 1;
+                addr_sel  = 0;
+            end
+            // SHR (Dir), B
+            7'b1000111: begin
+                alu_op    = 4'b0111;
+                muxA_sel  = 1;
+                muxB_sel  = 2'b00;
+                regA_load = 0;
+                regB_load = 0;
+                mem_write = 1;
+                addr_sel  = 0;
+            end
+            // SHR (B)
+            7'b1001000: begin
+                alu_op    = 4'b0111;
+                muxA_sel  = 0;
+                muxB_sel  = 2'b00;
+                regA_load = 0;
+                regB_load = 0;
+                mem_write = 1;
+                addr_sel  = 1;
+            end
+            
+            // INC (Dir)
+            7'b1001001: begin
+                alu_op    = 4'b1000;
+                muxA_sel  = 0;
+                muxB_sel  = 2'b10;
+                regA_load = 0;
+                regB_load = 0;
+                mem_write = 1;
+                addr_sel  = 0;
+            end
+            // INC (B)
+            7'b1001010: begin
+                alu_op    = 4'b1000;
+                muxA_sel  = 0;
+                muxB_sel  = 2'b10;
+                regA_load = 0;
+                regB_load = 0;
+                mem_write = 1;
+                addr_sel  = 1;
+            end
+            
+            // RST (Dir)
+            7'b1001011: begin
+                alu_op    = 4'b0000;
+                muxA_sel  = 0;
+                muxB_sel  = 2'b01;
+                regA_load = 0;
+                regB_load = 0;
+                mem_write = 1;
+                addr_sel  = 0;
+            end
+            // RST (B)
+            7'b1001100: begin
+                alu_op    = 4'b0000;
+                muxA_sel  = 0;
+                muxB_sel  = 2'b01;
+                regA_load = 0;
+                regB_load = 0;
+                mem_write = 1;
+                addr_sel  = 1;
             end
 
 
