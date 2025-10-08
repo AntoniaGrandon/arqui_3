@@ -1,5 +1,0 @@
-000001000000010  // MOV A, 5
-000001100000010  // MOV B, 5
-100110100000000  // CMP A, B
-101010000000011  // JEQ 6
-000001000000110  // MOV A, 77 (Debería ejecutarse solo si el salto fue exitoso)

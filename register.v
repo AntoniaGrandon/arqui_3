@@ -5,7 +5,7 @@ module register(clk, data, load, out);
 
     initial out = 0;
 
-    always @(negedge clk) begin
+    always @(posedge clk) begin
         if (load) out <= data;
     end
 endmodule

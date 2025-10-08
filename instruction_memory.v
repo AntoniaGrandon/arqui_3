@@ -1,11 +1,11 @@
 module instruction_memory(address, out);
-    input [7:0] address;  // Cambiado a 8 bits
+    input [7:0] address;
     output reg [14:0] out;  
 
-    reg [14:0] mem [0:255];  // Cambiado a 256 instrucciones
+    reg [14:0] mem [0:255];
 
     initial begin
-        $readmemb("im.dat", mem);
+        $readmemb("im_memory.dat", mem);
     end
 
     always @(*) begin

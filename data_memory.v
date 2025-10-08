@@ -18,9 +18,9 @@ module data_memory(
         data_out = mem[address];
     end
 
-    always @(negedge clk) begin
+    always @(posedge clk) begin
         if (write_enable) begin
-            mem[address] <= data_in;
+            mem[address] = data_in; 
         end
     end
 endmodule

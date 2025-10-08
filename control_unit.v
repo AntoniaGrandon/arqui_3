@@ -1,5 +1,5 @@
 module control_unit(
-    input [6:0] opcode, // opcode de 7 bits (im_out_bus[14:8])
+    input [6:0] opcode,
     output reg [3:0] alu_op,
     output reg muxA_sel,
     output reg [1:0] muxB_sel,
@@ -7,9 +7,9 @@ module control_unit(
     output reg regB_load,
     output reg mem_write,
     output reg addr_sel,
-    output reg flags_write,        //  habilita escritura de flags (para CMP)
-    output reg is_jump,            //  indica que es instrucción de salto
-    output reg [3:0] jump_cond     //  condición de salto (4 bits)
+    output reg flags_write,
+    output reg is_jump,
+    output reg [3:0] jump_cond
 );
     always @(*) begin
         case (opcode)
@@ -22,6 +22,9 @@ module control_unit(
                 regB_load = 0;
                 mem_write = 0;
                 addr_sel  = 0;
+                flags_write = 0;
+                is_jump   = 0;
+                jump_cond = 4'b0000;
             end
             // MOV B, A 
             7'b0000001: begin
@@ -383,7 +386,7 @@ module control_unit(
 
             // SHL A, A 
             7'b0011100: begin
-                alu_op    = 4'b0110; // shift left
+                alu_op    = 4'b0110;
                 muxA_sel = 0;
                 muxB_sel = 2'b00;
                 regA_load = 1;
@@ -436,7 +439,7 @@ module control_unit(
 
             // SHR A, A
             7'b0100000: begin
-                alu_op    = 4'b0111; // shift right
+                alu_op    = 4'b0111;
                 muxA_sel = 0;
                 muxB_sel = 2'b00;
                 regA_load = 1;
@@ -489,7 +492,7 @@ module control_unit(
 
             // INC B
             7'b0100100: begin
-                alu_op    = 4'b1000;    //increment
+                alu_op    = 4'b1000;
                 muxA_sel = 1;
                 muxB_sel = 2'b00;
                 regA_load = 0;
@@ -1038,44 +1041,44 @@ module control_unit(
             
             // CMP A, B 
             7'b1001101: begin
-                alu_op    = 4'b0001;      // SUB (resta)
-                muxA_sel  = 0;            // Selecciona regA
-                muxB_sel  = 2'b00;        // Selecciona regB
-                regA_load = 0;            // NO cargar resultado en A
-                regB_load = 0;            // NO cargar resultado en B
-                mem_write = 0;            // NO escribir en memoria
-                addr_sel  = 0;            // No importa
-                flags_write = 1;          // SÍ actualizar flags (CLAVE!)
-                is_jump   = 0;            // No es salto
-                jump_cond = 4'b0000;      // No aplica
+                alu_op    = 4'b0001;
+                muxA_sel  = 0;
+                muxB_sel  = 2'b00;
+                regA_load = 0;
+                regB_load = 0;
+                mem_write = 0;
+                addr_sel  = 0;
+                flags_write = 1;
+                is_jump   = 0;
+                jump_cond = 4'b0000;
             end
 
             // JMP Dir 
             7'b1010011: begin
-                alu_op    = 4'b0000;      // No importa operación ALU
-                muxA_sel  = 0;            // No importa
-                muxB_sel  = 2'b00;        // No importa
-                regA_load = 0;            // No cargar registros
-                regB_load = 0;            // No cargar registros
-                mem_write = 0;            // No escribir memoria
-                addr_sel  = 0;            // No importa
-                flags_write = 0;          // No actualizar flags
-                is_jump   = 1;            // ES un salto
-                jump_cond = 4'b0000;      // Condición: siempre (JMP)
+                alu_op    = 4'b0000;
+                muxA_sel  = 0;
+                muxB_sel  = 2'b00;
+                regA_load = 0;
+                regB_load = 0;
+                mem_write = 0;
+                addr_sel  = 0;
+                flags_write = 0;
+                is_jump   = 1;
+                jump_cond = 4'b0000;
             end
 
             // JEQ Dir 
             7'b1010100: begin
-                alu_op    = 4'b0000;      // No importa operación ALU
-                muxA_sel  = 0;            // No importa
-                muxB_sel  = 2'b00;        // No importa
-                regA_load = 0;            // No cargar registros
-                regB_load = 0;            // No cargar registros
-                mem_write = 0;            // No escribir memoria
-                addr_sel  = 0;            // No importa
-                flags_write = 0;          // No actualizar flags
-                is_jump   = 1;            // ES un salto
-                jump_cond = 4'b0001;      // Condición: Z=1 (iguales)
+                alu_op    = 4'b0000;
+                muxA_sel  = 0;
+                muxB_sel  = 2'b00;
+                regA_load = 0;
+                regB_load = 0;
+                mem_write = 0;
+                addr_sel  = 0;
+                flags_write = 0;
+                is_jump   = 1;
+                jump_cond = 4'b0001;
             end
 
 

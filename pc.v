@@ -1,8 +1,8 @@
 module pc(clk, pc);
     input clk;
-    output reg [7:0] pc;  // Cambiado a 8 bits para 256 instrucciones
+    output reg [7:0] pc;
 
-    initial pc = 8'hFF;  // Empieza en 255, incrementa a 0 en primer ciclo
+    initial pc = 0;
 
     always @(posedge clk) begin
         pc <= pc + 1;
