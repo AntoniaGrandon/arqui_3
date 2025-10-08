@@ -1,6 +1,6 @@
 # Archivos del proyecto
 VERILOG_FILES = computer.v alu.v instruction_memory.v mux2.v muxA.v muxB.v pc.v register.v control_unit.v data_memory.v mux_address.v
-TESTBENCH_FILE = testbench_memory.v
+TESTBENCH_FILE = testbench.v
 YOSYS_SCRIPT = yosys.tcl
 
 # Rutas de salida

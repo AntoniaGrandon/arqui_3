@@ -5,7 +5,7 @@ module instruction_memory(address, out);
     reg [14:0] mem [0:255];
 
     initial begin
-        $readmemb("im_memory.dat", mem);
+        $readmemb("im.dat", mem);
     end
 
     always @(*) begin
