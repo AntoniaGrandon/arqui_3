@@ -11,6 +11,9 @@ module computer(
 
     wire [3:0] alu_op;
     wire muxA_sel, regA_load, regB_load, mem_write, addr_sel;
+    wire flags_write;        
+    wire is_jump;            
+    wire [3:0] jump_cond;    
     wire [7:0] muxA_out_bus;
     wire [7:0] muxB_out_bus;
     wire [1:0] muxB_sel;
@@ -28,7 +31,10 @@ module computer(
         .regA_load(regA_load),
         .regB_load(regB_load),
         .mem_write(mem_write),
-        .addr_sel(addr_sel)
+        .addr_sel(addr_sel),
+        .flags_write(flags_write),    
+        .is_jump(is_jump),            
+        .jump_cond(jump_cond)         
     );
 
     register regA(.clk(clk), .data(alu_out_bus), .load(regA_load), .out(regA_out_bus));
