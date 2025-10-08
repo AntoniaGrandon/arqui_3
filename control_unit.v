@@ -6,7 +6,10 @@ module control_unit(
     output reg regA_load,
     output reg regB_load,
     output reg mem_write,
-    output reg addr_sel
+    output reg addr_sel,
+    output reg flags_write,        //  habilita escritura de flags (para CMP)
+    output reg is_jump,            //  indica que es instrucción de salto
+    output reg [3:0] jump_cond     //  condición de salto (4 bits)
 );
     always @(*) begin
         case (opcode)
@@ -29,6 +32,9 @@ module control_unit(
                 regB_load = 1;
                 mem_write = 0;
                 addr_sel  = 0;
+                flags_write = 0;
+                is_jump   = 0;
+                jump_cond = 4'b0000;
             end
             // MOV A, Lit 
             7'b0000010: begin
@@ -39,6 +45,9 @@ module control_unit(
                 regB_load = 0;
                 mem_write = 0;
                 addr_sel  = 0;
+                flags_write = 0;
+                is_jump   = 0;
+                jump_cond = 4'b0000;
             end
             // MOV B, Lit 
             7'b0000011: begin
@@ -49,6 +58,9 @@ module control_unit(
                 regB_load = 1;
                 mem_write = 0;
                 addr_sel  = 0;
+                flags_write = 0;
+                is_jump   = 0;
+                jump_cond = 4'b0000;
             end
 
             // ADD A, B 
@@ -60,6 +72,9 @@ module control_unit(
                 regB_load = 0;
                 mem_write = 0;
                 addr_sel  = 0;
+                flags_write = 0;
+                is_jump   = 0;
+                jump_cond = 4'b0000;
             end
             // ADD B, A 
             7'b0000101: begin
@@ -70,6 +85,9 @@ module control_unit(
                 regB_load = 1;
                 mem_write = 0;
                 addr_sel  = 0;
+                flags_write = 0;
+                is_jump   = 0;
+                jump_cond = 4'b0000;
             end
             // ADD A, Lit
             7'b0000110: begin
@@ -80,6 +98,9 @@ module control_unit(
                 regB_load = 0;
                 mem_write = 0;
                 addr_sel  = 0;
+                flags_write = 0;
+                is_jump   = 0;
+                jump_cond = 4'b0000;
             end
             // ADD B, Lit
             7'b0000111: begin
@@ -90,6 +111,9 @@ module control_unit(
                 regB_load = 1;
                 mem_write = 0;
                 addr_sel  = 0;
+                flags_write = 0;
+                is_jump   = 0;
+                jump_cond = 4'b0000;
             end
 
             //SUB A, B
@@ -101,6 +125,9 @@ module control_unit(
                 regB_load = 0;
                 mem_write = 0;
                 addr_sel  = 0;
+                flags_write = 0;
+                is_jump   = 0;
+                jump_cond = 4'b0000;
             end
             // SUB B, A
             7'b0001001: begin
@@ -111,6 +138,9 @@ module control_unit(
                 regB_load = 1;
                 mem_write = 0;
                 addr_sel  = 0;
+                flags_write = 0;
+                is_jump   = 0;
+                jump_cond = 4'b0000;
             end
             // SUB A, Lit
             7'b0001010: begin
@@ -121,6 +151,9 @@ module control_unit(
                 regB_load = 0;
                 mem_write = 0;
                 addr_sel  = 0;
+                flags_write = 0;
+                is_jump   = 0;
+                jump_cond = 4'b0000;
             end
             // SUB B, Lit
             7'b0001011: begin
@@ -131,6 +164,9 @@ module control_unit(
                 regB_load = 1;
                 mem_write = 0;
                 addr_sel  = 0;
+                flags_write = 0;
+                is_jump   = 0;
+                jump_cond = 4'b0000;
             end
 
             // AND A, B
@@ -142,6 +178,9 @@ module control_unit(
                 regB_load = 0;
                 mem_write = 0;
                 addr_sel  = 0;
+                flags_write = 0;
+                is_jump   = 0;
+                jump_cond = 4'b0000;
             end
             // AND B, A
             7'b0001101: begin
@@ -152,6 +191,9 @@ module control_unit(
                 regB_load = 1;
                 mem_write = 0;
                 addr_sel  = 0;
+                flags_write = 0;
+                is_jump   = 0;
+                jump_cond = 4'b0000;
             end
             // AND A, Lit
             7'b0001110: begin
@@ -162,6 +204,9 @@ module control_unit(
                 regB_load = 0;
                 mem_write = 0;
                 addr_sel  = 0;
+                flags_write = 0;
+                is_jump   = 0;
+                jump_cond = 4'b0000;
             end
             // AND B, Lit
             7'b0001111: begin
@@ -172,6 +217,9 @@ module control_unit(
                 regB_load = 1;
                 mem_write = 0;
                 addr_sel  = 0;
+                flags_write = 0;
+                is_jump   = 0;
+                jump_cond = 4'b0000;
             end
 
             // OR A, B
@@ -183,6 +231,9 @@ module control_unit(
                 regB_load = 0;
                 mem_write = 0;
                 addr_sel  = 0;
+                flags_write = 0;
+                is_jump   = 0;
+                jump_cond = 4'b0000;
             end
             // OR B, A
             7'b0010001: begin
@@ -193,6 +244,9 @@ module control_unit(
                 regB_load = 1;
                 mem_write = 0;
                 addr_sel  = 0;
+                flags_write = 0;
+                is_jump   = 0;
+                jump_cond = 4'b0000;
             end
             // OR A, Lit
             7'b0010010: begin
@@ -203,6 +257,9 @@ module control_unit(
                 regB_load = 0;
                 mem_write = 0;
                 addr_sel  = 0;
+                flags_write = 0;
+                is_jump   = 0;
+                jump_cond = 4'b0000;
             end
             // OR B, Lit
             7'b0010011: begin
@@ -213,6 +270,9 @@ module control_unit(
                 regB_load = 1;
                 mem_write = 0;
                 addr_sel  = 0;
+                flags_write = 0;
+                is_jump   = 0;
+                jump_cond = 4'b0000;
             end
 
             // NOT A, A
@@ -224,6 +284,9 @@ module control_unit(
                 regB_load = 0;
                 mem_write = 0;
                 addr_sel  = 0;
+                flags_write = 0;
+                is_jump   = 0;
+                jump_cond = 4'b0000;
             end
             // NOT A, B
             7'b0010101: begin
@@ -234,6 +297,9 @@ module control_unit(
                 regB_load = 0;
                 mem_write = 0;
                 addr_sel  = 0;
+                flags_write = 0;
+                is_jump   = 0;
+                jump_cond = 4'b0000;
             end
             // NOT B, A
             7'b0010110: begin
@@ -244,6 +310,9 @@ module control_unit(
                 regB_load = 1;
                 mem_write = 0;
                 addr_sel  = 0;
+                flags_write = 0;
+                is_jump   = 0;
+                jump_cond = 4'b0000;
             end
             // NOT B, B
             7'b0010111: begin
@@ -254,6 +323,9 @@ module control_unit(
                 regB_load = 1;
                 mem_write = 0;
                 addr_sel  = 0;
+                flags_write = 0;
+                is_jump   = 0;
+                jump_cond = 4'b0000;
             end
 
             // XOR A, B
@@ -265,6 +337,9 @@ module control_unit(
                 regB_load = 0;
                 mem_write = 0;
                 addr_sel  = 0;
+                flags_write = 0;
+                is_jump   = 0;
+                jump_cond = 4'b0000;
             end
             // XOR B, A
             7'b0011001: begin
@@ -275,6 +350,9 @@ module control_unit(
                 regB_load = 1;
                 mem_write = 0;
                 addr_sel  = 0;
+                flags_write = 0;
+                is_jump   = 0;
+                jump_cond = 4'b0000;
             end
             // XOR A, Lit
             7'b0011010: begin
@@ -285,6 +363,9 @@ module control_unit(
                 regB_load = 0;
                 mem_write = 0;
                 addr_sel  = 0;
+                flags_write = 0;
+                is_jump   = 0;
+                jump_cond = 4'b0000;
             end
             // XOR B, Lit
             7'b0011011: begin
@@ -295,6 +376,9 @@ module control_unit(
                 regB_load = 1;
                 mem_write = 0;
                 addr_sel  = 0;
+                flags_write = 0;
+                is_jump   = 0;
+                jump_cond = 4'b0000;
             end
 
             // SHL A, A 
@@ -306,6 +390,9 @@ module control_unit(
                 regB_load = 0;
                 mem_write = 0;
                 addr_sel  = 0;
+                flags_write = 0;
+                is_jump   = 0;
+                jump_cond = 4'b0000;
             end
             // SHL A, B
             7'b0011101: begin
@@ -316,6 +403,9 @@ module control_unit(
                 regB_load = 0;
                 mem_write = 0;
                 addr_sel  = 0;
+                flags_write = 0;
+                is_jump   = 0;
+                jump_cond = 4'b0000;
             end
             // SHL B, A
             7'b0011110: begin
@@ -326,6 +416,9 @@ module control_unit(
                 regB_load = 1;
                 mem_write = 0;
                 addr_sel  = 0;
+                flags_write = 0;
+                is_jump   = 0;
+                jump_cond = 4'b0000;
             end
             // SHL B, B
             7'b0011111: begin
@@ -336,6 +429,9 @@ module control_unit(
                 regB_load = 1;
                 mem_write = 0;
                 addr_sel  = 0;
+                flags_write = 0;
+                is_jump   = 0;
+                jump_cond = 4'b0000;
             end
 
             // SHR A, A
@@ -347,6 +443,9 @@ module control_unit(
                 regB_load = 0;
                 mem_write = 0;
                 addr_sel  = 0;
+                flags_write = 0;
+                is_jump   = 0;
+                jump_cond = 4'b0000;
             end
             // SHR A, B
             7'b0100001: begin
@@ -357,6 +456,9 @@ module control_unit(
                 regB_load = 0;
                 mem_write = 0;
                 addr_sel  = 0;
+                flags_write = 0;
+                is_jump   = 0;
+                jump_cond = 4'b0000;
             end
             // SHR B, A
             7'b0100010: begin
@@ -367,6 +469,9 @@ module control_unit(
                 regB_load = 1;
                 mem_write = 0;
                 addr_sel  = 0;
+                flags_write = 0;
+                is_jump   = 0;
+                jump_cond = 4'b0000;
             end
             // SHR B, B
             7'b0100011: begin
@@ -377,6 +482,9 @@ module control_unit(
                 regB_load = 1;
                 mem_write = 0;
                 addr_sel  = 0;
+                flags_write = 0;
+                is_jump   = 0;
+                jump_cond = 4'b0000;
             end
 
             // INC B
@@ -388,6 +496,9 @@ module control_unit(
                 regB_load = 1;
                 mem_write = 0;
                 addr_sel  = 0;
+                flags_write = 0;
+                is_jump   = 0;
+                jump_cond = 4'b0000;
             end
 
             // ========== Instrucciones con Direccionamiento ==========
@@ -401,6 +512,9 @@ module control_unit(
                 regB_load = 0;
                 mem_write = 0;
                 addr_sel  = 0;
+                flags_write = 0;
+                is_jump   = 0;
+                jump_cond = 4'b0000;
             end
             // MOV B, (Dir)
             7'b0100110: begin
@@ -411,6 +525,9 @@ module control_unit(
                 regB_load = 1;
                 mem_write = 0;
                 addr_sel  = 0;
+                flags_write = 0;
+                is_jump   = 0;
+                jump_cond = 4'b0000;
             end
             // MOV (Dir), A
             7'b0100111: begin
@@ -421,6 +538,9 @@ module control_unit(
                 regB_load = 0;
                 mem_write = 1;
                 addr_sel  = 0;
+                flags_write = 0;
+                is_jump   = 0;
+                jump_cond = 4'b0000;
             end
             // MOV (Dir), B
             7'b0101000: begin
@@ -431,6 +551,9 @@ module control_unit(
                 regB_load = 0;
                 mem_write = 1;
                 addr_sel  = 0;
+                flags_write = 0;
+                is_jump   = 0;
+                jump_cond = 4'b0000;
             end
             // MOV A, (B)
             7'b0101001: begin
@@ -441,6 +564,9 @@ module control_unit(
                 regB_load = 0;
                 mem_write = 0;
                 addr_sel  = 1;
+                flags_write = 0;
+                is_jump   = 0;
+                jump_cond = 4'b0000;
             end
             // MOV B, (B)
             7'b0101010: begin
@@ -451,6 +577,9 @@ module control_unit(
                 regB_load = 1;
                 mem_write = 0;
                 addr_sel  = 1;
+                flags_write = 0;
+                is_jump   = 0;
+                jump_cond = 4'b0000;
             end
             // MOV (B), A
             7'b0101011: begin
@@ -461,6 +590,9 @@ module control_unit(
                 regB_load = 0;
                 mem_write = 1;
                 addr_sel  = 1;
+                flags_write = 0;
+                is_jump   = 0;
+                jump_cond = 4'b0000;
             end
             
             // ADD A, (Dir)
@@ -472,6 +604,9 @@ module control_unit(
                 regB_load = 0;
                 mem_write = 0;
                 addr_sel  = 0;
+                flags_write = 0;
+                is_jump   = 0;
+                jump_cond = 4'b0000;
             end
             // ADD B, (Dir)
             7'b0101101: begin
@@ -482,6 +617,9 @@ module control_unit(
                 regB_load = 1;
                 mem_write = 0;
                 addr_sel  = 0;
+                flags_write = 0;
+                is_jump   = 0;
+                jump_cond = 4'b0000;
             end
             // ADD A, (B)
             7'b0101110: begin
@@ -492,6 +630,9 @@ module control_unit(
                 regB_load = 0;
                 mem_write = 0;
                 addr_sel  = 1;
+                flags_write = 0;
+                is_jump   = 0;
+                jump_cond = 4'b0000;
             end
             // ADD (Dir)
             7'b0101111: begin
@@ -502,6 +643,9 @@ module control_unit(
                 regB_load = 0;
                 mem_write = 1;
                 addr_sel  = 0;
+                flags_write = 0;
+                is_jump   = 0;
+                jump_cond = 4'b0000;
             end
             
             // SUB A, (Dir)
@@ -513,6 +657,9 @@ module control_unit(
                 regB_load = 0;
                 mem_write = 0;
                 addr_sel  = 0;
+                flags_write = 0;
+                is_jump   = 0;
+                jump_cond = 4'b0000;
             end
             // SUB B, (Dir)
             7'b0110001: begin
@@ -523,6 +670,9 @@ module control_unit(
                 regB_load = 1;
                 mem_write = 0;
                 addr_sel  = 0;
+                flags_write = 0;
+                is_jump   = 0;
+                jump_cond = 4'b0000;
             end
             // SUB A, (B)
             7'b0110010: begin
@@ -533,6 +683,9 @@ module control_unit(
                 regB_load = 0;
                 mem_write = 0;
                 addr_sel  = 1;
+                flags_write = 0;
+                is_jump   = 0;
+                jump_cond = 4'b0000;
             end
             // SUB (Dir)
             7'b0110011: begin
@@ -543,6 +696,9 @@ module control_unit(
                 regB_load = 0;
                 mem_write = 1;
                 addr_sel  = 0;
+                flags_write = 0;
+                is_jump   = 0;
+                jump_cond = 4'b0000;
             end
 
             // AND A, (Dir)
@@ -554,6 +710,9 @@ module control_unit(
                 regB_load = 0;
                 mem_write = 0;
                 addr_sel  = 0;
+                flags_write = 0;
+                is_jump   = 0;
+                jump_cond = 4'b0000;
             end
             // AND B, (Dir)
             7'b0110101: begin
@@ -564,6 +723,9 @@ module control_unit(
                 regB_load = 1;
                 mem_write = 0;
                 addr_sel  = 0;
+                flags_write = 0;
+                is_jump   = 0;
+                jump_cond = 4'b0000;
             end
             // AND A, (B)
             7'b0110110: begin
@@ -574,6 +736,9 @@ module control_unit(
                 regB_load = 0;
                 mem_write = 0;
                 addr_sel  = 1;
+                flags_write = 0;
+                is_jump   = 0;
+                jump_cond = 4'b0000;
             end
             // AND (Dir)
             7'b0110111: begin
@@ -584,6 +749,9 @@ module control_unit(
                 regB_load = 0;
                 mem_write = 1;
                 addr_sel  = 0;
+                flags_write = 0;
+                is_jump   = 0;
+                jump_cond = 4'b0000;
             end
             
             // OR A, (Dir)
@@ -595,6 +763,9 @@ module control_unit(
                 regB_load = 0;
                 mem_write = 0;
                 addr_sel  = 0;
+                flags_write = 0;
+                is_jump   = 0;
+                jump_cond = 4'b0000;
             end
             // OR B, (Dir)
             7'b0111001: begin
@@ -605,6 +776,9 @@ module control_unit(
                 regB_load = 1;
                 mem_write = 0;
                 addr_sel  = 0;
+                flags_write = 0;
+                is_jump   = 0;
+                jump_cond = 4'b0000;
             end
             // OR A, (B)
             7'b0111010: begin
@@ -615,6 +789,9 @@ module control_unit(
                 regB_load = 0;
                 mem_write = 0;
                 addr_sel  = 1;
+                flags_write = 0;
+                is_jump   = 0;
+                jump_cond = 4'b0000;
             end
             // OR (Dir)
             7'b0111011: begin
@@ -625,6 +802,9 @@ module control_unit(
                 regB_load = 0;
                 mem_write = 1;
                 addr_sel  = 0;
+                flags_write = 0;
+                is_jump   = 0;
+                jump_cond = 4'b0000;
             end
             
             // NOT (Dir), A
@@ -636,6 +816,9 @@ module control_unit(
                 regB_load = 0;
                 mem_write = 1;
                 addr_sel  = 0;
+                flags_write = 0;
+                is_jump   = 0;
+                jump_cond = 4'b0000;
             end
             // NOT (Dir), B
             7'b0111101: begin
@@ -646,6 +829,9 @@ module control_unit(
                 regB_load = 0;
                 mem_write = 1;
                 addr_sel  = 0;
+                flags_write = 0;
+                is_jump   = 0;
+                jump_cond = 4'b0000;
             end
             // NOT (B)
             7'b0111110: begin
@@ -656,6 +842,9 @@ module control_unit(
                 regB_load = 0;
                 mem_write = 1;
                 addr_sel  = 1;
+                flags_write = 0;
+                is_jump   = 0;
+                jump_cond = 4'b0000;
             end
             
             // XOR A, (Dir)
@@ -667,6 +856,9 @@ module control_unit(
                 regB_load = 0;
                 mem_write = 0;
                 addr_sel  = 0;
+                flags_write = 0;
+                is_jump   = 0;
+                jump_cond = 4'b0000;
             end
             // XOR B, (Dir)
             7'b1000000: begin
@@ -677,6 +869,9 @@ module control_unit(
                 regB_load = 1;
                 mem_write = 0;
                 addr_sel  = 0;
+                flags_write = 0;
+                is_jump   = 0;
+                jump_cond = 4'b0000;
             end
             // XOR A, (B)
             7'b1000001: begin
@@ -687,6 +882,9 @@ module control_unit(
                 regB_load = 0;
                 mem_write = 0;
                 addr_sel  = 1;
+                flags_write = 0;
+                is_jump   = 0;
+                jump_cond = 4'b0000;
             end
             // XOR (Dir)
             7'b1000010: begin
@@ -697,6 +895,9 @@ module control_unit(
                 regB_load = 0;
                 mem_write = 1;
                 addr_sel  = 0;
+                flags_write = 0;
+                is_jump   = 0;
+                jump_cond = 4'b0000;
             end
             
             // SHL (Dir), A
@@ -708,6 +909,9 @@ module control_unit(
                 regB_load = 0;
                 mem_write = 1;
                 addr_sel  = 0;
+                flags_write = 0;
+                is_jump   = 0;
+                jump_cond = 4'b0000;
             end
             // SHL (Dir), B
             7'b1000100: begin
@@ -718,6 +922,9 @@ module control_unit(
                 regB_load = 0;
                 mem_write = 1;
                 addr_sel  = 0;
+                flags_write = 0;
+                is_jump   = 0;
+                jump_cond = 4'b0000;
             end
             // SHL (B)
             7'b1000101: begin
@@ -728,6 +935,9 @@ module control_unit(
                 regB_load = 0;
                 mem_write = 1;
                 addr_sel  = 1;
+                flags_write = 0;
+                is_jump   = 0;
+                jump_cond = 4'b0000;
             end
             
             // SHR (Dir), A
@@ -739,6 +949,9 @@ module control_unit(
                 regB_load = 0;
                 mem_write = 1;
                 addr_sel  = 0;
+                flags_write = 0;
+                is_jump   = 0;
+                jump_cond = 4'b0000;
             end
             // SHR (Dir), B
             7'b1000111: begin
@@ -749,6 +962,9 @@ module control_unit(
                 regB_load = 0;
                 mem_write = 1;
                 addr_sel  = 0;
+                flags_write = 0;
+                is_jump   = 0;
+                jump_cond = 4'b0000;
             end
             // SHR (B)
             7'b1001000: begin
@@ -759,6 +975,9 @@ module control_unit(
                 regB_load = 0;
                 mem_write = 1;
                 addr_sel  = 1;
+                flags_write = 0;
+                is_jump   = 0;
+                jump_cond = 4'b0000;
             end
             
             // INC (Dir)
@@ -770,6 +989,9 @@ module control_unit(
                 regB_load = 0;
                 mem_write = 1;
                 addr_sel  = 0;
+                flags_write = 0;
+                is_jump   = 0;
+                jump_cond = 4'b0000;
             end
             // INC (B)
             7'b1001010: begin
@@ -780,6 +1002,9 @@ module control_unit(
                 regB_load = 0;
                 mem_write = 1;
                 addr_sel  = 1;
+                flags_write = 0;
+                is_jump   = 0;
+                jump_cond = 4'b0000;
             end
             
             // RST (Dir)
@@ -791,6 +1016,9 @@ module control_unit(
                 regB_load = 0;
                 mem_write = 1;
                 addr_sel  = 0;
+                flags_write = 0;
+                is_jump   = 0;
+                jump_cond = 4'b0000;
             end
             // RST (B)
             7'b1001100: begin
@@ -801,6 +1029,53 @@ module control_unit(
                 regB_load = 0;
                 mem_write = 1;
                 addr_sel  = 1;
+                flags_write = 0;
+                is_jump   = 0;
+                jump_cond = 4'b0000;
+            end
+
+            // ============ INSTRUCCIONES DE SALTO (Iteración 1) ============
+            
+            // CMP A, B 
+            7'b1001101: begin
+                alu_op    = 4'b0001;      // SUB (resta)
+                muxA_sel  = 0;            // Selecciona regA
+                muxB_sel  = 2'b00;        // Selecciona regB
+                regA_load = 0;            // NO cargar resultado en A
+                regB_load = 0;            // NO cargar resultado en B
+                mem_write = 0;            // NO escribir en memoria
+                addr_sel  = 0;            // No importa
+                flags_write = 1;          // SÍ actualizar flags (CLAVE!)
+                is_jump   = 0;            // No es salto
+                jump_cond = 4'b0000;      // No aplica
+            end
+
+            // JMP Dir 
+            7'b1010011: begin
+                alu_op    = 4'b0000;      // No importa operación ALU
+                muxA_sel  = 0;            // No importa
+                muxB_sel  = 2'b00;        // No importa
+                regA_load = 0;            // No cargar registros
+                regB_load = 0;            // No cargar registros
+                mem_write = 0;            // No escribir memoria
+                addr_sel  = 0;            // No importa
+                flags_write = 0;          // No actualizar flags
+                is_jump   = 1;            // ES un salto
+                jump_cond = 4'b0000;      // Condición: siempre (JMP)
+            end
+
+            // JEQ Dir 
+            7'b1010100: begin
+                alu_op    = 4'b0000;      // No importa operación ALU
+                muxA_sel  = 0;            // No importa
+                muxB_sel  = 2'b00;        // No importa
+                regA_load = 0;            // No cargar registros
+                regB_load = 0;            // No cargar registros
+                mem_write = 0;            // No escribir memoria
+                addr_sel  = 0;            // No importa
+                flags_write = 0;          // No actualizar flags
+                is_jump   = 1;            // ES un salto
+                jump_cond = 4'b0001;      // Condición: Z=1 (iguales)
             end
 
 
@@ -812,6 +1087,9 @@ module control_unit(
                 regB_load = 0;
                 mem_write = 0;
                 addr_sel  = 0;
+                flags_write = 0;
+                is_jump   = 0;
+                jump_cond = 4'b0000;
             end
         endcase
     end
