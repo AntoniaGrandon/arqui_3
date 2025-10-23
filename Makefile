@@ -37,6 +37,16 @@ synth: $(OUT_DIR)
 	yosys -c $(YOSYS_SCRIPT)
 	@echo "Síntesis completa."
 
+# FPGA build (apio) - requires apio installed locally
+fpga-build:
+	@echo "Building FPGA bitstream with apio..."
+	apio build
+
+# Program FPGA (example using iceprog). Adjust tool as needed.
+fpga-program:
+	@echo "Programming FPGA (iceprog) - replace path as needed..."
+	iceprog build/top_final.bin
+
 # Target para limpiar los archivos generados
 clean:
 	@echo "Limpiando archivos generados..."

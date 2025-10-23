@@ -1,0 +1,12 @@
+# Build artifacts
+out/
+*.vcd
+*.bin
+*.bit
+
+# apio / python cache
+.apio/
+__pycache__/
+
+# OS files
+.DS_Store
