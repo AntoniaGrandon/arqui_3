@@ -38,7 +38,8 @@ module test;
     initial begin
         $dumpfile("out/dump.vcd");
         $dumpvars(0, test);
-        $readmemb("im_memory.dat", Comp.IM.mem);
+    // Load instruction memory (file provided in repository)
+    $readmemb("im.dat", Comp.IM.mem);
 
         // --- Test: Full & Expanded Memory Sequence ---
         $display("\n----- STARTING TEST: Full Memory Sequence -----");
@@ -202,8 +203,10 @@ module test;
 
         // --- Step 3: SUB (200) (Execute subtraction and store) ---
         #2;
-        // Expected result in memory: 100 - 40 = 60
-        $display("CHECK @ t=%0t: After SUB (200) -> DM[200] = %d", $time, Comp.DM.mem[200]);
+    // Debug info
+    // debug info removed
+    // Expected result in memory: 100 - 40 = 60
+    $display("CHECK @ t=%0t: After SUB (200) -> DM[200] = %d", $time, Comp.DM.mem[200]);
         if (Comp.DM.mem[200] !== 8'd60) begin
             $error("FAIL [SUB (Dir)]: DM[200] expected 60, got %d", Comp.DM.mem[200]);
             sub_dir_test_failed = 1'b1;
@@ -331,8 +334,10 @@ module test;
 
         // --- Step 3: NOT (B) (Execute the bitwise NOT and store) ---
         #2;
-        // Expected result in memory: ~165 (~10100101b) = 90 (01011010b)
-        $display("CHECK @ t=%0t: After NOT (B) -> DM[210] = %d", $time, Comp.DM.mem[210]);
+    // Debug info
+    // debug info removed
+    // Expected result in memory: ~165 (~10100101b) = 90 (01011010b)
+    $display("CHECK @ t=%0t: After NOT (B) -> DM[210] = %d", $time, Comp.DM.mem[210]);
         if (Comp.DM.mem[210] !== 8'd90) begin
             $error("FAIL [NOT (B)]: DM[210] expected 90, got %d", Comp.DM.mem[210]);
             not_b_ind_test_failed = 1'b1;
@@ -401,8 +406,10 @@ module test;
 
         // --- Step 2: SHL (230), B (Execute the shift left and store) ---
         #2;
-        // Expected result in memory: 85 (01010101b) << 1 = 170 (10101010b)
-        $display("CHECK @ t=%0t: After SHL (230), B -> DM[230] = %d", $time, Comp.DM.mem[230]);
+    // Debug info
+    // debug info removed
+    // Expected result in memory: 85 (01010101b) << 1 = 170 (10101010b)
+    $display("CHECK @ t=%0t: After SHL (230), B -> DM[230] = %d", $time, Comp.DM.mem[230]);
         if (Comp.DM.mem[230] !== 8'd170) begin
             $error("FAIL [SHL (Dir),B]: DM[230] expected 170, got %d", Comp.DM.mem[230]);
             shl_dir_b_test_failed = 1'b1;
@@ -436,8 +443,10 @@ module test;
 
         // --- Step 3: SHR (B) (Execute the shift right and store) ---
         #2;
-        // Expected result in memory: 212 (11010100b) >> 1 = 106 (01101010b)
-        $display("CHECK @ t=%0t: After SHR (B) -> DM[240] = %d", $time, Comp.DM.mem[240]);
+    // Debug info
+    // debug info removed
+    // Expected result in memory: 212 (11010100b) >> 1 = 106 (01101010b)
+    $display("CHECK @ t=%0t: After SHR (B) -> DM[240] = %d", $time, Comp.DM.mem[240]);
         if (Comp.DM.mem[240] !== 8'd106) begin
             $error("FAIL [SHR (B)]: DM[240] expected 106, got %d", Comp.DM.mem[240]);
             shr_b_ind_test_failed = 1'b1;
@@ -464,8 +473,10 @@ module test;
 
         // Execute INC (250)
         #2;
-        // Expected result in memory: 77 + 1 = 78
-        $display("CHECK @ t=%0t: After INC (250) -> DM[250] = %d", $time, Comp.DM.mem[250]);
+    // Debug info
+    // debug info removed
+    // Expected result in memory: 77 + 1 = 78
+    $display("CHECK @ t=%0t: After INC (250) -> DM[250] = %d", $time, Comp.DM.mem[250]);
         if (Comp.DM.mem[250] !== 8'd78) begin
             $error("FAIL [INC (Dir)]: DM[250] expected 78, got %d", Comp.DM.mem[250]);
             inc_dir_test_failed = 1'b1;
@@ -482,8 +493,10 @@ module test;
 
         // Execute INC (251)
         #2;
-        // Expected result in memory: 255 + 1 = 0 (8-bit overflow)
-        $display("CHECK @ t=%0t: After INC (251) [Overflow] -> DM[251] = %d", $time, Comp.DM.mem[251]);
+    // Debug info
+    // debug info removed
+    // Expected result in memory: 255 + 1 = 0 (8-bit overflow)
+    $display("CHECK @ t=%0t: After INC (251) [Overflow] -> DM[251] = %d", $time, Comp.DM.mem[251]);
         if (Comp.DM.mem[251] !== 8'd0) begin
             $error("FAIL [INC (Dir)]: DM[251] expected 0 after overflow, got %d", Comp.DM.mem[251]);
             inc_dir_test_failed = 1'b1;
@@ -517,8 +530,10 @@ module test;
 
         // --- Step 2: RST (B) (Execute the reset and store) ---
         #2;
-        // Expected result in memory: 0
-        $display("CHECK @ t=%0t: After RST (B) -> DM[255] = %d", $time, Comp.DM.mem[255]);
+    // Debug info
+    // debug info removed
+    // Expected result in memory: 0
+    $display("CHECK @ t=%0t: After RST (B) -> DM[255] = %d", $time, Comp.DM.mem[255]);
         if (Comp.DM.mem[255] !== 8'd0) begin
             $error("FAIL [RST (B)]: DM[255] expected 0, got %d", Comp.DM.mem[255]);
             rst_b_ind_test_failed = 1'b1;

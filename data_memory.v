@@ -6,13 +6,7 @@ module data_memory(
     output reg [7:0] data_out
 );
     reg [7:0] mem [0:255];
-    integer i;
-    
-    initial begin
-        for (i = 0; i < 256; i = i + 1) begin
-            mem[i] = 8'b0;
-        end
-    end
+    // Memory intentionally left uninitialized so unwritten locations are 'x'
 
     always @(*) begin
         data_out = mem[address];

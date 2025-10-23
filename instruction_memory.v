@@ -4,7 +4,12 @@ module instruction_memory(address, out);
 
     reg [14:0] mem [0:255];
 
+    integer i;
     initial begin
+        // Initialize memory to NOP (all zeros) to avoid X when file is shorter
+        for (i = 0; i < 256; i = i + 1) begin
+            mem[i] = 15'b0;
+        end
         $readmemb("im.dat", mem);
     end
 

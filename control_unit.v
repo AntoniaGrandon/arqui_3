@@ -6,12 +6,25 @@ module control_unit(
     output reg regA_load,
     output reg regB_load,
     output reg mem_write,
+    output reg [1:0] mem_data_sel,
     output reg addr_sel,
     output reg flags_write,
     output reg is_jump,
     output reg [3:0] jump_cond
 );
     always @(*) begin
+        // Default control values
+        alu_op      = 4'b0000;
+        muxA_sel    = 1'b0;
+        muxB_sel    = 2'b00;
+        regA_load   = 1'b0;
+        regB_load   = 1'b0;
+        mem_write   = 1'b0;
+        addr_sel    = 1'b0;
+        flags_write = 1'b0;
+        is_jump     = 1'b0;
+        jump_cond   = 4'b0000;
+    mem_data_sel = 2'b01; // default: memory writes take ALU result
         case (opcode)
             // MOV A, B 
             7'b0000000: begin
@@ -540,6 +553,8 @@ module control_unit(
                 regA_load = 0;
                 regB_load = 0;
                 mem_write = 1;
+                // Store register A directly to memory (use muxA_out)
+                mem_data_sel = 2'b00;
                 addr_sel  = 0;
                 flags_write = 0;
                 is_jump   = 0;
@@ -553,6 +568,8 @@ module control_unit(
                 regA_load = 0;
                 regB_load = 0;
                 mem_write = 1;
+                // Store register B directly to memory
+                mem_data_sel = 2'b00;
                 addr_sel  = 0;
                 flags_write = 0;
                 is_jump   = 0;
@@ -593,6 +610,8 @@ module control_unit(
                 regB_load = 0;
                 mem_write = 1;
                 addr_sel  = 1;
+                // write register A directly
+                mem_data_sel = 2'b00;
                 flags_write = 0;
                 is_jump   = 0;
                 jump_cond = 4'b0000;
@@ -1018,6 +1037,8 @@ module control_unit(
                 regA_load = 0;
                 regB_load = 0;
                 mem_write = 1;
+                // write constant zero to memory
+                mem_data_sel = 2'b10;
                 addr_sel  = 0;
                 flags_write = 0;
                 is_jump   = 0;
@@ -1031,6 +1052,8 @@ module control_unit(
                 regA_load = 0;
                 regB_load = 0;
                 mem_write = 1;
+                // write constant zero to memory
+                mem_data_sel = 2'b10;
                 addr_sel  = 1;
                 flags_write = 0;
                 is_jump   = 0;
@@ -1044,6 +1067,19 @@ module control_unit(
                 alu_op    = 4'b0001;
                 muxA_sel  = 0;
                 muxB_sel  = 2'b00;
+                regA_load = 0;
+                regB_load = 0;
+                mem_write = 0;
+                addr_sel  = 0;
+                flags_write = 1;
+                is_jump   = 0;
+                jump_cond = 4'b0000;
+            end
+            // CMP B, Lit (compare regB with literal)
+            7'b1001111: begin
+                alu_op    = 4'b0001; // SUB
+                muxA_sel  = 1;       // use regB as A input to ALU
+                muxB_sel  = 2'b01;   // use literal as B input
                 regA_load = 0;
                 regB_load = 0;
                 mem_write = 0;
@@ -1079,6 +1115,34 @@ module control_unit(
                 flags_write = 0;
                 is_jump   = 1;
                 jump_cond = 4'b0001;
+            end
+
+            // JGE Dir (Jump if greater or equal)
+            7'b1011000: begin
+                alu_op    = 4'b0000;
+                muxA_sel  = 0;
+                muxB_sel  = 2'b00;
+                regA_load = 0;
+                regB_load = 0;
+                mem_write = 0;
+                addr_sel  = 0;
+                flags_write = 0;
+                is_jump   = 1;
+                jump_cond = 4'b0010;
+            end
+
+            // JLE Dir (Jump if less or equal)
+            7'b1011001: begin
+                alu_op    = 4'b0000;
+                muxA_sel  = 0;
+                muxB_sel  = 2'b00;
+                regA_load = 0;
+                regB_load = 0;
+                mem_write = 0;
+                addr_sel  = 0;
+                flags_write = 0;
+                is_jump   = 1;
+                jump_cond = 4'b0011;
             end
 
 

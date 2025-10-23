@@ -11,6 +11,7 @@ module computer(
 
     wire [3:0] alu_op;
     wire muxA_sel, regA_load, regB_load, mem_write, addr_sel;
+    wire [1:0] mem_data_sel;
     wire flags_write;
     wire is_jump;
     wire [3:0] jump_cond;
@@ -19,9 +20,14 @@ module computer(
     wire [1:0] muxB_sel;
     wire [7:0] mem_address;
     wire [7:0] mem_data_out;
+    // status flags
+    wire flag_z, flag_n, flag_c, flag_v;
+    wire jump_enable;
 
     pc PC(
         .clk(clk),
+        .jump(is_jump & jump_enable),
+        .jump_addr(literal),
         .pc(pc_out_bus)
     );
 
@@ -38,12 +44,40 @@ module computer(
         .regA_load(regA_load),
         .regB_load(regB_load),
         .mem_write(mem_write),
+        .mem_data_sel(mem_data_sel),
         .addr_sel(addr_sel),
         .flags_write(flags_write),
         .is_jump(is_jump),
         .jump_cond(jump_cond)
     );
 
+    // Status register: update flags when control unit requests it
+    status_register SR(
+        .clk(clk),
+        .rst(1'b0),
+        .flags_write(flags_write),
+        .alu_result(alu_out_bus),
+        .alu_carry(1'b0),
+        .alu_overflow(1'b0),
+        .flag_z(flag_z),
+        .flag_n(flag_n),
+        .flag_c(flag_c),
+        .flag_v(flag_v)
+    );
+
+    // Jump logic: decide when to enable PC jump based on condition flags
+    jump_logic JL(
+        .jump_cond(jump_cond),
+        .flag_z(flag_z),
+        .flag_n(flag_n),
+        .flag_c(flag_c),
+        .flag_v(flag_v),
+        .flags_write(flags_write),
+        .alu_result(alu_out_bus),
+        .jump_enable(jump_enable)
+    );
+
+    // Registers load from ALU result (alu_out_bus)
     register regA(
         .clk(clk),
         .data(alu_out_bus),
@@ -80,10 +114,15 @@ module computer(
         .address(mem_address)
     );
 
+    // Select memory input: either direct register value (muxA_out_bus) or ALU result (alu_out_bus)
+    wire [7:0] mem_data_in;
+    assign mem_data_in = (mem_data_sel == 2'b00) ? muxA_out_bus :
+                         (mem_data_sel == 2'b01) ? alu_out_bus : 8'b0;
+
     data_memory DM(
         .clk(clk),
         .address(mem_address),
-        .data_in(muxA_out_bus),
+        .data_in(mem_data_in),
         .write_enable(mem_write),
         .data_out(mem_data_out)
     );
@@ -94,5 +133,7 @@ module computer(
         .s(alu_op),
         .out(alu_out_bus)
     );
+
+    // Debug trace removed for cleaner output
 
 endmodule
