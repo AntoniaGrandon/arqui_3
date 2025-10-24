@@ -2,9 +2,9 @@ module computer(
     input clk,
     output [7:0] alu_out_bus,
     output [7:0] regA_out_bus,
-    output [7:0] regB_out_bus
+    output [7:0] regB_out_bus,
+    output [7:0] pc_out_bus
 );
-    wire [7:0] pc_out_bus;
     wire [14:0] im_out_bus;
     wire [6:0] opcode = im_out_bus[14:8];
     wire [7:0] literal = im_out_bus[7:0];

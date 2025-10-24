@@ -5,7 +5,7 @@ module data_memory(
     input write_enable,
     output reg [7:0] data_out
 );
-    reg [7:0] mem [0:255];
+    reg [7:0] mem [0:15];
     // Memory intentionally left uninitialized so unwritten locations are 'x'
 
     always @(*) begin
