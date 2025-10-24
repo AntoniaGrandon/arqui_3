@@ -1,0 +1,55 @@
+Proyecto 3: Fabricaci´on y Emulaci´on del Chip
+1. Proyecto
+1.1. Descripci´on
+En este proyecto llevar´an su core de 8-bits desde la descripci´on en RTL (para este caso Verilog) hasta
+un archivo fabricable (.GDS), experimentando con el flujo completo de dise˜no de circuitos integrados. Posteriormente llevar´an su dise˜no a una placa FPGA para emular (distinto de simular) el comportamiento de su
+chip.
+Para generar el .GDS los m´as simple es utilizar la m´aquina virtual que provee Zero to ASIC Course.
+Esta m´aquina la pueden descargar de aqu´ı. Notar que la m´aquina es bastante grande y necesitan descargar
+VirtualBox.
+Para flashear su proyecto en la FPGA necesitar´an instalar APIO (lo m´as f´acil es hacerlo fuera de la
+m´aquina virtual). APIO es un gestor de paquetes y ecosistema de desarrollo para FPGAs de c´odigo abierto.
+Funciona como un wrapper que unifica m´ultiples herramientas del flujo de trabajo en FPGAs en comandos
+sencillos. En palabras simples, hace que podamos cargar programas en nuestras FPGAs en tan s´olo un par
+de comandos.
+En este curso ocuparemos la FPGA Go Board de Nandland. Deben configurar APIO para que funcione
+de forma correcta con la FPGA para lo que Nanland entrega su propia documentaci´on.
+Uso de FPGAs: Solo tenemos 11 FPGAs para los 18 grupos por lo que se les dar´a acceso en los siguientes
+horarios:
+1. Mi´ercoles 15 y 22 de octubre en horario de clases en la sala.
+2. Viernes 17 y 24 de octubre entre 3pm y 5pm en laboratorio de prototipos.
+3. Lunes 20 y 27 de octubre entre 2:30pm y 4:30pm en laboratorio de circuitos.
+Optimizar el uso de este tiempo. Cuando pidan la FPGA se les pedir´a mostrar que ya pueden realizar un apio
+build con ´exito de su proyecto.
+2. Entregas
+2.1. Entrega Parcial 1 (22 de Octubre)
+En esta entrega debe mostrar que ha instalado y puede correr todas las herramientas de forma correcta.
+En esta entrega deber´a:
+1. Elegir un ejemplo de los que vienen en la m´aquina virtual distinto a spm y correrlo por el flujo de
+Openlane. El ayudante les va a pedir un dato espec´ıfico del dise˜no (por ejemplo: ´area, cantidad de
+compuertas, gds, mapa de densidad de potencia o mapa de dendidad de compuertas) y usted deber´a saber
+como obtener esta informaci´on.
+2. Utilizando APIO, cargar un programa a la FPGA en que cada bot´on est´a mapeado a un led. Al momento
+de apretar un bot´on se debe prender el led respectivo.
+2.2. Entrega Final (29 de Octubre)
+En esta entrega deben mostrar que pueden correr su computador por el flujo de Openlane y pueden flashear
+la FPGA.
+1. Correr su computador por el flujo de Openlane. El ayudante les va a pedir distintos par´ametros del
+dise˜no y ustedes se los deber´an mostrar.
+2. Utilizando APIO flashear su computador en la FPGA. En el computador debe haber un programa en
+el que cuentan desde 15 hasta cero. Deben mostrar el resultado en decimal en el display y en binario
+utilizando los cuatro led de la FPGA. No se puede implementar esta funcionalidad directamente en
+verilog, sino que debe ser a trav´es del su core.
+3. Recursos de Aprendizaje
+3.1. Openlane
+1. Openlane
+2. Documentaci´on de Openlane
+3. OpenROAD
+4. Los primeros 30 minutos de este
+5. Openlane ejemplo
+6. Openlane ejemplo
+7. Openlane ejemplo
+3.2. FPGA
+1. Introducci´on a FPGAs 1
+2. Introducci´on a FPGAs 2
+3. Ejemplos de Proyectos FPGA
