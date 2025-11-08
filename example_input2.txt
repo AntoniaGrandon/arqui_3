@@ -1,0 +1,7 @@
+DATA:
+v_a -2
+v_b 20
+error 0
+result 0
+
+result = a + b

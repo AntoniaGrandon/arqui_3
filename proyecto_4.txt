@@ -1,0 +1,30 @@
+Descripci´on
+En este proyecto desarrollar´an un compilador para su computador. Se les entregar´a una expresi´on matem´atica y su compilador (escrito en el lenguaje que usted prefiera) entregar´a el c´odigo en assembly con
+instrucciones extendidas (compatible con ASUA) para solucionar el problema.
+La expresi´on tendr´a la forma:
+result = a op b op c op (d op e) op func(f, g)
+donde result, a, b, c, d, e, f, g son n´umeros de 8 bits en complemento de 2; op representa una operaci´on
+que puede ser: +, −, ∗, / o %; y func representa una funci´on que puede ser: max, min o abs.
+La expresi´on puede incluir par´entesis para priorizar ciertas operaciones y puede tener un n´umero variable
+de hasta siete operandos (a, b, c, d, e, f, g).
+El compilador debe generar el c´odigo en assembly que ejecute la expresi´on utilizando el menor n´umero
+posible de l´ıneas y accesos a memoria. Los valores de los operandos no ser´an conocidos durante la compilaci´on.
+Estos operandos ser´an definidos en el bloque DATA de la siguiente forma:
+DATA:
+a 1
+b 3
+c 45
+...
+error 0
+result 0
+Al t´ermino de la ejecuci´on, el resultado de la operaci´on debe almacenarse en result.
+En caso de que ocurra un overflow o una divisi´on por cero, se deber´a escribir un 1 en error, y el valor de
+result deber´a permanecer en cero.
+El compilador tambi´en debe informar el n´umero total de l´ıneas generadas y el n´umero de accesos a memoria
+realizados durante la ejecuci´on.
+Entregas
+Entrega Parcial (1 punto): 12 de noviembre
+Compilador sin incluir:
+Operadores ∗, / y %
+Funciones
+Detecci´on de errores
