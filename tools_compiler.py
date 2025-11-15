@@ -20,7 +20,14 @@ class BinOp:
         self.left = left
         self.right = right
     def __repr__(self):
-        return f"BinOp({self.op}, {self.left}, {self.right})"
+        return f"BinOp({self.op}, {self.left}, {self.right})" 
+    
+class FuncCall: #Clase para manejar FUNCIONES recién añadidas -Sofi
+    def __init__(self, name, args):
+        self.name = name
+        self.args = args
+    def __repr__(self):
+        return f"FuncCall({self.name}, {self.args})"
 
 class Parser:
     def __init__(self, s):
@@ -36,6 +43,7 @@ class Parser:
             assert self.s[self.pos:self.pos+len(expected)] == expected
             self.pos += len(expected)
             return expected
+        
         ch = self.s[self.pos]
         self.pos += 1
         return ch
@@ -44,28 +52,55 @@ class Parser:
         while self.peek() and self.peek().isspace():
             self.pos += 1
 
-    def parse_expr(self):
+    def parse_expr(self): #Para SUMAS y RESTAS (lo cambie un poco) -Sofi (pd: porque sigo intentando escribir los comentarios con //, triste)
         self.skip_ws()
-        node = self.parse_term()
+        node = self.parse_mul()
+
         while True:
             self.skip_ws()
             if self.s[self.pos:self.pos+1] == '+':
                 self.pos += 1
-                right = self.parse_term()
+                #Aquí cambie el right de self.parse_term() a self.parse_mul() para que priorice *, / y %
+                right = self.parse_mul()
+
                 node = BinOp('+', node, right)
+
             elif self.s[self.pos:self.pos+1] == '-':
                 self.pos += 1
-                right = self.parse_term()
+                #Aquí cambie el right de self.parse_term() a self.parse_mul() por lo mismo
+                right = self.parse_mul()
+
                 node = BinOp('-', node, right)
+
+            else:
+                break
+
+        return node
+    
+    def parse_mul(self): #Añadi esto para MULTIPLICACIÓN(*), DIVISIÓN(/) y DIVISIÓN ENTERA(%) - Sofi
+        #Operadores ∗, / y % (1.5 puntos) listoooos - Sofi
+        node = self.parse_term()
+        while True:
+            self.skip_ws()
+            if self.peek() == '*':
+                self.consume('*')
+                node = BinOp('*', node, self.parse_term())
+            elif self.peek() == '/':
+                self.consume('/')
+                node = BinOp('/', node, self.parse_term())
+            elif self.peek() == '%':
+                self.consume('%')
+                node = BinOp('%', node, self.parse_term())
             else:
                 break
         return node
-
-    def parse_term(self):
+    
+    def parse_term(self): #para las VARIABLES, los VALORES NUMERICOS y PARENTESIS -Sofi (pd: mald!%#tos # para comentar, debimos hacerlo en C o C++)
         self.skip_ws()
         ch = self.peek()
+        
         if ch == '(':
-            self.consume('(')
+            self.consume('(') #para los PARENTESIS (hecho por anto) -Sofi
             node = self.parse_expr()
             self.skip_ws()
             if self.peek() == ')':
@@ -73,12 +108,35 @@ class Parser:
             else:
                 raise SyntaxError('Missing )')
             return node
-        m = re.match(r"[A-Za-z_][A-Za-z0-9_]*", self.s[self.pos:])
+        
+        m = re.match(r"(max|min|abs)", self.s[self.pos:]) #para FUNCIONES: MAX, MIN y ABS (hecho por Sofi) -Sofi
+        if m:
+            fname = m.group(0)
+            self.pos += len(fname)
+
+            self.skip_ws()
+            self.consume('(')
+
+            arg1 = self.parse_expr()
+            if fname in ("max", "min"):  #FUNCIONES BINARIAS MAXIMO Y MINIMO -Sofi (pd: extraño los {} de C y C++)
+                self.skip_ws()
+                self.consume(',')
+                arg2 = self.parse_expr()
+                self.skip_ws()
+                self.consume(')')
+                return BinOp(fname, arg1, arg2)
+            else:  #VALOR ABSOLUTO -Sofi
+                self.skip_ws()
+                self.consume(')')
+                return BinOp(fname, arg1, None)
+        
+        m = re.match(r"[A-Za-z_][A-Za-z0-9_]*", self.s[self.pos:]) #para las VARIABLES (hecho por Anto) -Sofi
         if m:
             name = m.group(0)
             self.pos += len(name)
             return Var(name)
-        m = re.match(r"[0-9]+", self.s[self.pos:])
+        
+        m = re.match(r"[0-9]+", self.s[self.pos:]) #para VALORES NUMERICOS (hecho por Anto) -Sofi
         if m:
             val = int(m.group(0))
             self.pos += len(m.group(0))
@@ -119,12 +177,55 @@ class CodeGen:
             self.gen(node.left, data_names)
             self.emit("POP B")
             self.mem_accesses += 1 
+
             if node.op == '+':
                 self.emit("ADD A, B")
+                self.emit("JO error_overflow") #Añadido para revisar Overflow -Sofi
             elif node.op == '-':
                 self.emit("SUB A, B")
+                self.emit("JO error_overflow") #Añadido para revisar Overflow -Sofi
+            elif node.op == '*': #Añadido para implementar lo que nos piden en la Entrega Final -Sofi
+                self.emit("MUL A, B")
+                self.emit("JO error_overflow") #Añadido para revisar Overflow -Sofi
+            elif node.op == '/':
+                self.emit("CMP B, 0")
+                self.emit("JE error_div_zero") #Añadido para revisar si se hizo División por 0 -Sofi
+                self.emit("DIV A, B")
+                self.emit("JO error_overflow") #Añadido para revisar Overflow -Sofi
+            elif node.op == '%':
+                self.emit("CMP B, 0")
+                self.emit("JE error_div_zero") #Añadido para revisar si se hizo División por 0 -Sofi
+                self.emit("MOD A, B")
+                self.emit("JO error_overflow") #Añadido para revisar Overflow -Sofi
+            elif node.op == 'max': # Implementación para MAX -Sofi
+                label_end = f"L{self.tmp_idx}_MAX_END"
+                self.tmp_idx += 1
+                
+                self.emit(f"CMP A, B")
+                self.emit(f"JGE {label_end}")
+                self.emit(f"MOV A, B")
+                self.emit(f"{label_end}:")
+                
+            elif node.op == 'min': # Implementación para MIN -Sofi
+                label_end = f"L{self.tmp_idx}_MIN_END"
+                self.tmp_idx += 1
+                
+                self.emit(f"CMP A, B")
+                self.emit(f"JLE {label_end}")
+                self.emit(f"MOV A, B")
+                self.emit(f"{label_end}:")
+
+            elif node.op == 'abs': # Implementación para ABS -Sofi (pd: Anto si quieres de ahí borra mis comentarios,
+                # la verdad no son muy profesionales jiji, pero encuentro que por lo menos así no me pierdo :( )
+                label_end = f"L{self.tmp_idx}_ABS_END"
+                self.tmp_idx += 1
+                
+                self.emit(f"CMP A, 0")
+                self.emit(f"JGE {label_end}")
+                self.emit(f"NEG A") 
+                self.emit(f"{label_end}:")
             else:
-                raise ValueError(f"Operator {node.op} not supported in partial deliverable")
+                raise ValueError(f"Operator {node.op} not supported")
             return
         raise ValueError(f"Unknown node type: {node}")
 
@@ -168,15 +269,37 @@ def compile_from_text(text):
     data, expr, short_map = parse_input_text(text)
     parser = Parser(expr)
     ast = parser.parse_expr()
+
     cg = CodeGen()
     cg.emit("MOV A, 0 ")
     cg.emit("MOV (error), A")
     cg.emit("MOV (result), A")
     cg.mem_accesses += 2
+
     valid_names = set(data.keys())
+
     cg.gen(ast, (valid_names, short_map))
     cg.emit("MOV (result), A")
     cg.mem_accesses += 1
+
+    cg.emit("JMP end")
+
+    cg.emit("error_div_zero:")
+    cg.emit("MOV A, 1")
+    cg.emit("MOV (error), A")
+    cg.emit("MOV A, 0")
+    cg.emit("MOV (result), A")
+    cg.emit("JMP end")
+
+    cg.emit("error_overflow:")
+    cg.emit("MOV A, 1")
+    cg.emit("MOV (error), A")
+    cg.emit("MOV A, 0")
+    cg.emit("MOV (result), A")
+    cg.emit("JMP end")
+
+    cg.emit("end:")
+
     combined_data = data.copy()
     for t in getattr(cg, 'temps', []):
         if t not in combined_data:
