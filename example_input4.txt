@@ -1,0 +1,8 @@
+DATA:
+a 6
+b 2
+c 4
+error 0
+result 0
+
+result = (a/b)*4

@@ -156,7 +156,7 @@ class CodeGen:
     def gen(self, node, data_names):
         valid_names, short_map = data_names
         if isinstance(node, Num):
-            self.emit(f"MOV A, #{node.value}    ; load immediate")
+            self.emit(f"MOV A, {node.value}")
             return
         if isinstance(node, Var):
             varname = None
@@ -177,26 +177,137 @@ class CodeGen:
             self.gen(node.left, data_names)
             self.emit("POP B")
             self.mem_accesses += 1 
-
+    
             if node.op == '+':
                 self.emit("ADD A, B")
-                self.emit("JO error_overflow") #Añadido para revisar Overflow -Sofi
+
             elif node.op == '-':
                 self.emit("SUB A, B")
-                self.emit("JO error_overflow") #Añadido para revisar Overflow -Sofi
-            elif node.op == '*': #Añadido para implementar lo que nos piden en la Entrega Final -Sofi
-                self.emit("MUL A, B")
-                self.emit("JO error_overflow") #Añadido para revisar Overflow -Sofi
+
+            elif node.op == '*': 
+                tmp_res = f"tmp_mul_{self.tmp_idx}"
+                tmp_left = f"tmp_mul_left_{self.tmp_idx}"
+                self.tmp_idx += 1
+                self.temps.append(tmp_res)
+                self.temps.append(tmp_left)
+
+                label_mul = f"MUL_{self.tmp_idx}"
+                label_end = f"END_MUL_{self.tmp_idx}"
+                self.tmp_idx += 1
+
+                self.emit(f"MOV ({tmp_left}), A")
+                self.mem_accesses += 1
+                
+                self.emit("MOV A, 0")
+                self.emit(f"MOV ({tmp_res}), A")
+                self.mem_accesses += 1
+                
+                self.emit(f"{label_mul}:")
+                self.emit("CMP B, 0")
+                self.emit(f"JEQ {label_end}")
+
+                self.emit(f"MOV A, ({tmp_res})")
+                self.emit(f"ADD A, ({tmp_left})")
+                self.emit(f"MOV ({tmp_res}), A")
+                self.mem_accesses += 2
+                
+                self.emit("SUB B, 1")
+                self.emit(f"JMP {label_mul}")
+
+                self.emit(f"{label_end}:")
+                self.emit(f"MOV A, ({tmp_res})")
+                self.mem_accesses += 1
+                return
+            
             elif node.op == '/':
+                tmp_res = f"tmp_div_{self.tmp_idx}"
+                tmp_left = f"tmp_div_left_{self.tmp_idx}"
+                self.tmp_idx += 1
+                self.temps.append(tmp_res)
+                self.temps.append(tmp_left)
+
+                label_div = f"DIV_{self.tmp_idx}"
+                label_end = f"END_DIV_{self.tmp_idx}"
+                self.tmp_idx += 1
+
+                self.emit(f"MOV ({tmp_left}), A")
+                self.mem_accesses += 1
+
+                self.emit("MOV A, 0")
+                self.emit(f"MOV ({tmp_res}), A")
+                self.mem_accesses += 1
+                
                 self.emit("CMP B, 0")
-                self.emit("JE error_div_zero") #Añadido para revisar si se hizo División por 0 -Sofi
-                self.emit("DIV A, B")
-                self.emit("JO error_overflow") #Añadido para revisar Overflow -Sofi
+                self.emit("JEQ error_div_zero")
+
+                self.emit(f"{label_div}:")
+                
+                self.emit(f"MOV A, ({tmp_left})")
+                self.mem_accesses += 1
+                
+                self.emit("CMP A, B")
+                self.emit(f"JLT {label_end}")
+
+                self.emit("SUB A, B")
+                self.emit(f"MOV ({tmp_left}), A")
+                self.mem_accesses += 1
+
+                self.emit(f"MOV A, ({tmp_res})")
+                self.emit("ADD A, 1")
+                self.emit(f"MOV ({tmp_res}), A")
+                self.mem_accesses += 2
+
+                self.emit(f"JMP {label_div}")
+
+                self.emit(f"{label_end}:")
+                self.emit(f"MOV A, ({tmp_res})")
+                self.mem_accesses += 1
+                return
+
             elif node.op == '%':
+                tmp_res = f"tmp_mod_res_{self.tmp_idx}"
+                tmp_left = f"tmp_mod_left_{self.tmp_idx}"
+                self.tmp_idx += 1
+                self.temps.append(tmp_res)
+                self.temps.append(tmp_left)
+
+                label_div = f"MOD_DIV_{self.tmp_idx}"
+                label_end = f"END_MOD_{self.tmp_idx}"
+                self.tmp_idx += 1
+
+                self.emit(f"MOV ({tmp_left}), A")
+                self.mem_accesses += 1
+                
                 self.emit("CMP B, 0")
-                self.emit("JE error_div_zero") #Añadido para revisar si se hizo División por 0 -Sofi
-                self.emit("MOD A, B")
-                self.emit("JO error_overflow") #Añadido para revisar Overflow -Sofi
+                self.emit(f"JEQ error_div_zero")
+
+                self.emit("MOV A, 0")
+                self.emit(f"MOV ({tmp_res}), A")
+                self.mem_accesses += 1
+
+                self.emit(f"{label_div}:")
+                self.emit(f"MOV A, ({tmp_left})")
+                self.mem_accesses += 1
+                
+                self.emit("CMP A, B")
+                self.emit(f"JLT {label_end}")
+
+                self.emit("SUB A, B")
+                self.emit(f"MOV ({tmp_left}), A")
+                self.mem_accesses += 1
+
+                self.emit(f"MOV A, ({tmp_res})") 
+                self.emit("ADD A, 1")
+                self.emit(f"MOV ({tmp_res}), A")
+                self.mem_accesses += 2
+
+                self.emit(f"JMP {label_div}")
+
+                self.emit(f"{label_end}:")
+                self.emit(f"MOV A, ({tmp_left})")
+                self.mem_accesses += 1
+                return
+
             elif node.op == 'max': # Implementación para MAX -Sofi
                 label_end = f"L{self.tmp_idx}_MAX_END"
                 self.tmp_idx += 1
@@ -271,7 +382,7 @@ def compile_from_text(text):
     ast = parser.parse_expr()
 
     cg = CodeGen()
-    cg.emit("MOV A, 0 ")
+    cg.emit("MOV A, 0")
     cg.emit("MOV (error), A")
     cg.emit("MOV (result), A")
     cg.mem_accesses += 2
@@ -284,21 +395,25 @@ def compile_from_text(text):
 
     cg.emit("JMP end")
 
-    cg.emit("error_div_zero:")
-    cg.emit("MOV A, 1")
-    cg.emit("MOV (error), A")
-    cg.emit("MOV A, 0")
-    cg.emit("MOV (result), A")
-    cg.emit("JMP end")
+    # Emitir manejadores de error/end solo si no fueron generados ya
+    if not any(line.strip() == "error_div_zero:" for line in cg.code):
+        cg.emit("error_div_zero:")
+        cg.emit("MOV A, 1")
+        cg.emit("MOV (error), A")
+        cg.emit("MOV A, 0")
+        cg.emit("MOV (result), A")
+        cg.emit("JMP end")
 
-    cg.emit("error_overflow:")
-    cg.emit("MOV A, 1")
-    cg.emit("MOV (error), A")
-    cg.emit("MOV A, 0")
-    cg.emit("MOV (result), A")
-    cg.emit("JMP end")
+    if not any(line.strip() == "error_overflow:" for line in cg.code):
+        cg.emit("error_overflow:")
+        cg.emit("MOV A, 1")
+        cg.emit("MOV (error), A")
+        cg.emit("MOV A, 0")
+        cg.emit("MOV (result), A")
+        cg.emit("JMP end")
 
-    cg.emit("end:")
+    if not any(line.strip() == "end:" for line in cg.code):
+        cg.emit("end:")
 
     combined_data = data.copy()
     for t in getattr(cg, 'temps', []):
