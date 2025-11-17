@@ -170,19 +170,185 @@ class CodeGen:
             self.mem_accesses += 1
             return
         if isinstance(node, BinOp):
+            if node.op == 'abs':
+                self.gen(node.left, data_names)
+                label_end = f"L{self.tmp_idx}_ABS_END"
+                self.tmp_idx += 1
+                self.emit(f"CMP A, 128")
+                self.emit(f"JLT {label_end}")
+                self.emit(f"MOV B, A")
+                self.emit(f"MOV A, 0")
+                self.emit(f"SUB A, B")
+                self.emit(f"{label_end}:")
+                return
+
             self.gen(node.right, data_names)
             self.emit("MOV B, A")
             self.emit("PUSH B")
-            self.mem_accesses += 1 
+            self.mem_accesses += 1
             self.gen(node.left, data_names)
             self.emit("POP B")
-            self.mem_accesses += 1 
+            self.mem_accesses += 1
     
             if node.op == '+':
-                self.emit("ADD A, B")
+                idx = self.tmp_idx
+                self.tmp_idx += 1
+                tmp_left = f"tmp_add_left_{idx}"
+                tmp_right = f"tmp_add_right_{idx}"
+                self.temps.append(tmp_left)
+                self.temps.append(tmp_right)
+
+                L_A_POS = f"L{idx}_ADD_A_POS"
+                L_A_NEG = f"L{idx}_ADD_A_NEG"
+                L_SKIP = f"L{idx}_ADD_SKIP"
+                L_AFTER = f"L{idx}_ADD_AFTER"
+
+                self.emit(f"MOV ({tmp_left}), A")
+                self.mem_accesses += 1
+                self.emit(f"MOV ({tmp_right}), B")
+                self.mem_accesses += 1
+                self.emit(f"CMP A, 128")
+                self.emit(f"JLT {L_A_POS}")
+
+                self.emit(f"{L_A_NEG}:")
+                self.emit(f"CMP B, 128")
+                self.emit(f"JLT {L_SKIP}")
+                self.emit(f"MOV A, -128")
+                self.emit(f"SUB A, B")
+                self.emit(f"MOV B, A")
+                self.emit(f"MOV A, ({tmp_left})")
+                self.mem_accesses += 1
+                self.emit(f"CMP A, B")
+                self.emit(f"JLT error_overflow")
+                self.emit(f"MOV B, ({tmp_right})")
+                self.mem_accesses += 1
+                self.emit(f"ADD A, B")
+                self.emit(f"JMP {L_AFTER}")
+
+                self.emit(f"{L_A_POS}:")
+                self.emit(f"CMP B, 128")
+                self.emit(f"JGE {L_SKIP}")
+                self.emit(f"MOV A, 127")
+                self.emit(f"SUB A, B")
+                self.emit(f"MOV B, A")
+                self.emit(f"MOV A, ({tmp_left})")
+                self.mem_accesses += 1
+                self.emit(f"CMP A, B")
+                self.emit(f"JGT error_overflow")
+                self.emit(f"MOV B, ({tmp_right})")
+                self.mem_accesses += 1
+                self.emit(f"ADD A, B")
+                self.emit(f"JMP {L_AFTER}")
+
+                self.emit(f"{L_SKIP}:")
+                self.emit(f"MOV A, ({tmp_left})")
+                self.mem_accesses += 1
+                self.emit(f"MOV B, ({tmp_right})")
+                self.mem_accesses += 1
+                self.emit(f"ADD A, B")
+                self.emit(f"{L_AFTER}:")
 
             elif node.op == '-':
-                self.emit("SUB A, B")
+                idx = self.tmp_idx
+                self.tmp_idx += 1
+                tmp_left = f"tmp_sub_left_{idx}"
+                tmp_right = f"tmp_sub_right_{idx}"
+                self.temps.append(tmp_left)
+                self.temps.append(tmp_right)
+
+                L_A_POS = f"L{idx}_SUB_A_POS"
+                L_A_NEG = f"L{idx}_SUB_A_NEG"
+                L_SKIP = f"L{idx}_SUB_SKIP"
+                L_AFTER = f"L{idx}_SUB_AFTER"
+
+                self.emit(f"MOV ({tmp_left}), A")
+                self.mem_accesses += 1
+                self.emit(f"MOV ({tmp_right}), B")
+                self.mem_accesses += 1
+
+                self.emit(f"MOV A, ({tmp_left})")
+                self.mem_accesses += 1
+                self.emit(f"MOV B, ({tmp_right})")
+                self.mem_accesses += 1
+                self.emit(f"SUB A, B")
+                tmp_result_val = f"tmp_sub_result_{idx}"
+                self.temps.append(tmp_result_val)
+                self.emit(f"MOV ({tmp_result_val}), A")
+                self.mem_accesses += 1
+
+                tmp_flag_res = f"tmp_sub_res_sign_{idx}"
+                tmp_flag_left = f"tmp_sub_left_sign_{idx}"
+                tmp_flag_right = f"tmp_sub_right_sign_{idx}"
+                self.temps.append(tmp_flag_res)
+                self.temps.append(tmp_flag_left)
+                self.temps.append(tmp_flag_right)
+
+                L_RES_POS = f"L{idx}_SUB_RES_POS"
+                L_RES_DONE = f"L{idx}_SUB_RES_DONE"
+                self.emit(f"CMP A, 128")
+                self.emit(f"JLT {L_RES_POS}")
+                self.emit(f"MOV A, 1")
+                self.emit(f"MOV ({tmp_flag_res}), A")
+                self.mem_accesses += 1
+                self.emit(f"JMP {L_RES_DONE}")
+                self.emit(f"{L_RES_POS}:")
+                self.emit(f"MOV A, 0")
+                self.emit(f"MOV ({tmp_flag_res}), A")
+                self.mem_accesses += 1
+                self.emit(f"{L_RES_DONE}:")
+
+                L_LEFT_POS = f"L{idx}_SUB_LEFT_POS"
+                L_LEFT_DONE = f"L{idx}_SUB_LEFT_DONE"
+                self.emit(f"MOV A, ({tmp_left})")
+                self.mem_accesses += 1
+                self.emit(f"CMP A, 128")
+                self.emit(f"JLT {L_LEFT_POS}")
+                self.emit(f"MOV A, 1")
+                self.emit(f"MOV ({tmp_flag_left}), A")
+                self.mem_accesses += 1
+                self.emit(f"JMP {L_LEFT_DONE}")
+                self.emit(f"{L_LEFT_POS}:")
+                self.emit(f"MOV A, 0")
+                self.emit(f"MOV ({tmp_flag_left}), A")
+                self.mem_accesses += 1
+                self.emit(f"{L_LEFT_DONE}:")
+
+                L_RIGHT_POS = f"L{idx}_SUB_RIGHT_POS"
+                L_RIGHT_DONE = f"L{idx}_SUB_RIGHT_DONE"
+                self.emit(f"MOV A, ({tmp_right})")
+                self.mem_accesses += 1
+                self.emit(f"CMP A, 128")
+                self.emit(f"JLT {L_RIGHT_POS}")
+                self.emit(f"MOV A, 1")
+                self.emit(f"MOV ({tmp_flag_right}), A")
+                self.mem_accesses += 1
+                self.emit(f"JMP {L_RIGHT_DONE}")
+                self.emit(f"{L_RIGHT_POS}:")
+                self.emit(f"MOV A, 0")
+                self.emit(f"MOV ({tmp_flag_right}), A")
+                self.mem_accesses += 1
+                self.emit(f"{L_RIGHT_DONE}:")
+
+                self.emit(f"MOV A, ({tmp_flag_left})")
+                self.mem_accesses += 1
+                self.emit(f"MOV B, ({tmp_flag_right})")
+                self.mem_accesses += 1
+                self.emit("CMP A, B")
+                L_NO_OVF = f"L{idx}_SUB_NO_OVF"
+                self.emit(f"JEQ {L_NO_OVF}")
+
+                self.emit(f"MOV A, ({tmp_flag_left})")
+                self.mem_accesses += 1
+                self.emit(f"MOV B, ({tmp_flag_res})")
+                self.mem_accesses += 1
+                self.emit("CMP A, B")
+                self.emit(f"JEQ {L_NO_OVF}")
+
+                self.emit(f"JMP error_overflow")
+
+                self.emit(f"{L_NO_OVF}:")
+                self.emit(f"MOV A, ({tmp_result_val})")
+                self.mem_accesses += 1
 
             elif node.op == '*': 
                 tmp_res = f"tmp_mul_{self.tmp_idx}"
@@ -194,14 +360,37 @@ class CodeGen:
                 label_mul = f"MUL_{self.tmp_idx}"
                 label_end = f"END_MUL_{self.tmp_idx}"
                 self.tmp_idx += 1
-
                 self.emit(f"MOV ({tmp_left}), A")
                 self.mem_accesses += 1
-                
+
                 self.emit("MOV A, 0")
                 self.emit(f"MOV ({tmp_res}), A")
                 self.mem_accesses += 1
-                
+
+                tmp_sign = f"tmp_mul_sign_{self.tmp_idx}"
+                self.tmp_idx += 1
+                self.temps.append(tmp_sign)
+
+                L_B_POS = f"L{self.tmp_idx}_MUL_B_POS"
+                L_AFTER_SIGN = f"L{self.tmp_idx}_MUL_AFTER_SIGN"
+
+                self.emit(f"MOV A, 0")
+                self.emit(f"MOV ({tmp_sign}), A")
+                self.mem_accesses += 1
+
+                self.emit(f"CMP B, 128")
+                self.emit(f"JLT {L_B_POS}")
+                self.emit(f"MOV A, 1")
+                self.emit(f"MOV ({tmp_sign}), A")
+                self.mem_accesses += 1
+                self.emit(f"MOV A, B")
+                self.emit(f"MOV B, 0")
+                self.emit(f"SUB B, A")
+                self.emit(f"JMP {L_AFTER_SIGN}")
+
+                self.emit(f"{L_B_POS}:")
+                self.emit(f"{L_AFTER_SIGN}:")
+
                 self.emit(f"{label_mul}:")
                 self.emit("CMP B, 0")
                 self.emit(f"JEQ {label_end}")
@@ -210,13 +399,23 @@ class CodeGen:
                 self.emit(f"ADD A, ({tmp_left})")
                 self.emit(f"MOV ({tmp_res}), A")
                 self.mem_accesses += 2
-                
+
                 self.emit("SUB B, 1")
                 self.emit(f"JMP {label_mul}")
 
                 self.emit(f"{label_end}:")
                 self.emit(f"MOV A, ({tmp_res})")
                 self.mem_accesses += 1
+
+                self.emit(f"MOV B, ({tmp_sign})")
+                self.mem_accesses += 1
+                L_NO_NEG = f"L{self.tmp_idx}_MUL_NO_NEG"
+                self.emit(f"CMP B, 0")
+                self.emit(f"JEQ {L_NO_NEG}")
+                self.emit(f"MOV B, A")
+                self.emit(f"MOV A, 0")
+                self.emit(f"SUB A, B")
+                self.emit(f"{L_NO_NEG}:")
                 return
             
             elif node.op == '/':
@@ -309,9 +508,27 @@ class CodeGen:
                 return
 
             elif node.op == 'max': # Implementación para MAX -Sofi
-                label_end = f"L{self.tmp_idx}_MAX_END"
+                idx = self.tmp_idx
+                label_end = f"L{idx}_MAX_END"
+                L_A_POS = f"L{idx}_MAX_A_POS"
+                label_take_b = f"L{idx}_MAX_TAKEB"
                 self.tmp_idx += 1
-                
+
+                self.emit(f"CMP A, 128")
+                self.emit(f"JLT {L_A_POS}")
+                self.emit(f"CMP B, 128")
+                self.emit(f"JLT {label_take_b}")
+                self.emit(f"CMP A, B")
+                self.emit(f"JGE {label_end}")
+                self.emit(f"MOV A, B")
+                self.emit(f"JMP {label_end}")
+                self.emit(f"{label_take_b}:")
+                self.emit(f"MOV A, B")
+                self.emit(f"JMP {label_end}")
+
+                self.emit(f"{L_A_POS}:")
+                self.emit(f"CMP B, 128")
+                self.emit(f"JGE {label_end}")
                 self.emit(f"CMP A, B")
                 self.emit(f"JGE {label_end}")
                 self.emit(f"MOV A, B")
@@ -319,8 +536,21 @@ class CodeGen:
                 
             elif node.op == 'min': # Implementación para MIN -Sofi
                 label_end = f"L{self.tmp_idx}_MIN_END"
+                L_A_POS = f"L{self.tmp_idx}_MIN_A_POS"
                 self.tmp_idx += 1
-                
+
+                self.emit(f"CMP A, 128")
+                self.emit(f"JLT {L_A_POS}")
+                self.emit(f"CMP B, 128")
+                self.emit(f"JLT {label_end}")
+                self.emit(f"CMP A, B")
+                self.emit(f"JLE {label_end}")
+                self.emit(f"MOV A, B")
+                self.emit(f"JMP {label_end}")
+
+                self.emit(f"{L_A_POS}:")
+                self.emit(f"CMP B, 128")
+                self.emit(f"JGE {label_end}")
                 self.emit(f"CMP A, B")
                 self.emit(f"JLE {label_end}")
                 self.emit(f"MOV A, B")
@@ -331,9 +561,11 @@ class CodeGen:
                 label_end = f"L{self.tmp_idx}_ABS_END"
                 self.tmp_idx += 1
                 
-                self.emit(f"CMP A, 0")
-                self.emit(f"JGE {label_end}")
-                self.emit(f"NEG A") 
+                self.emit(f"CMP A, 128")
+                self.emit(f"JLT {label_end}")
+                self.emit(f"MOV B, A")
+                self.emit(f"MOV A, 0")
+                self.emit(f"SUB A, B")
                 self.emit(f"{label_end}:")
             else:
                 raise ValueError(f"Operator {node.op} not supported")
@@ -365,15 +597,16 @@ def parse_input_text(text):
             if m:
                 short = m.group(1)
                 short_map[short] = name
-    m2 = re.search(r"result\s*=\s*(.*)", text)
-    if not m2:
+                
+    matches = list(re.finditer(r"result\s*=\s*(.*)", text))
+    if matches:
+        expr = matches[-1].group(1).strip()
+    else:
         m3 = re.search(r"EXPR:\s*(.*)", text, re.S)
         if m3:
             expr = m3.group(1).strip()
         else:
             raise ValueError('No expression found (line with "result = ...")')
-    else:
-        expr = m2.group(1).strip()
     return data, expr, short_map
 
 def compile_from_text(text):

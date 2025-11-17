@@ -1,0 +1,12 @@
+DATA:
+v_a 10
+v_b -20
+v_c 5
+v_d 3
+v_e -50
+error 0
+result 0
+
+# Complex nested parentheses, functions and mixed ops
+# result = max(a + b * (c - d), min(e, abs(b)))
+result = max(a + b * (c - d), min(e, abs(b)))

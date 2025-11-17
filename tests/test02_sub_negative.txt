@@ -1,0 +1,7 @@
+DATA:
+v_a 5
+v_b 10
+error 0
+result 0
+
+result = a - b
