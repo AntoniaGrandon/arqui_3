@@ -542,90 +542,250 @@ class CodeGen:
                 return
             
             elif node.op == '/':
+                # Division with sign handling (C-like): quotient truncated toward zero,
+                # remainder has the sign of the numerator.
                 tmp_res = f"tmp_div_{self.tmp_idx}"
                 tmp_left = f"tmp_div_left_{self.tmp_idx}"
+                tmp_right = f"tmp_div_right_{self.tmp_idx}"
                 self.tmp_idx += 1
-                self.temps.append(tmp_res)
-                self.temps.append(tmp_left)
+                self.temps.extend([tmp_res, tmp_left, tmp_right])
+
+                # flags for signs
+                tmp_flag_left = f"tmp_div_left_sign_{self.tmp_idx}"
+                tmp_flag_right = f"tmp_div_right_sign_{self.tmp_idx}"
+                self.tmp_idx += 1
+                self.temps.extend([tmp_flag_left, tmp_flag_right])
 
                 label_div = f"DIV_{self.tmp_idx}"
                 label_end = f"END_DIV_{self.tmp_idx}"
                 self.tmp_idx += 1
 
+                # store operands (A=left, B=right)
                 self.emit(f"MOV ({tmp_left}), A")
                 self.mem_accesses += 1
-
-                self.emit("MOV A, 0")
-                self.emit(f"MOV ({tmp_res}), A")
+                self.emit(f"MOV ({tmp_right}), B")
                 self.mem_accesses += 1
-                
-                self.emit("CMP B, 0")
-                self.emit("JEQ error_div_zero")
 
-                self.emit(f"{label_div}:")
-                
+                # compute sign and abs(left)
+                L_LEFT_NEG = f"L{self.tmp_idx}_DIV_LEFT_NEG"
+                L_LEFT_DONE = f"L{self.tmp_idx}_DIV_LEFT_DONE"
+                self.tmp_idx += 1
                 self.emit(f"MOV A, ({tmp_left})")
                 self.mem_accesses += 1
-                
-                self.emit("CMP A, B")
+                self.emit(f"CMP A, 128")
+                self.emit(f"JLT {L_LEFT_NEG}")
+                # negative
+                self.emit(f"MOV A, 1")
+                self.emit(f"MOV ({tmp_flag_left}), A")
+                self.mem_accesses += 1
+                self.emit(f"MOV A, ({tmp_left})")
+                self.mem_accesses += 1
+                self.emit(f"MOV B, A")
+                self.emit(f"MOV A, 0")
+                self.emit(f"SUB A, B")
+                self.emit(f"MOV ({tmp_left}), A")
+                self.mem_accesses += 1
+                self.emit(f"JMP {L_LEFT_DONE}")
+                self.emit(f"{L_LEFT_NEG}:")
+                # non-negative
+                self.emit(f"MOV A, 0")
+                self.emit(f"MOV ({tmp_flag_left}), A")
+                self.mem_accesses += 1
+                self.emit(f"{L_LEFT_DONE}:")
+
+                # compute sign and abs(right)
+                L_RIGHT_NEG = f"L{self.tmp_idx}_DIV_RIGHT_NEG"
+                L_RIGHT_DONE = f"L{self.tmp_idx}_DIV_RIGHT_DONE"
+                self.tmp_idx += 1
+                self.emit(f"MOV A, ({tmp_right})")
+                self.mem_accesses += 1
+                self.emit(f"CMP A, 128")
+                self.emit(f"JLT {L_RIGHT_NEG}")
+                # negative
+                self.emit(f"MOV A, 1")
+                self.emit(f"MOV ({tmp_flag_right}), A")
+                self.mem_accesses += 1
+                self.emit(f"MOV A, ({tmp_right})")
+                self.mem_accesses += 1
+                self.emit(f"MOV B, A")
+                self.emit(f"MOV A, 0")
+                self.emit(f"SUB A, B")
+                self.emit(f"MOV ({tmp_right}), A")
+                self.mem_accesses += 1
+                self.emit(f"JMP {L_RIGHT_DONE}")
+                self.emit(f"{L_RIGHT_NEG}:")
+                # non-negative
+                self.emit(f"MOV A, 0")
+                self.emit(f"MOV ({tmp_flag_right}), A")
+                self.mem_accesses += 1
+                self.emit(f"{L_RIGHT_DONE}:")
+
+                # check division by zero (abs right)
+                self.emit(f"MOV A, ({tmp_right})")
+                self.mem_accesses += 1
+                self.emit(f"CMP A, 0")
+                self.emit(f"JEQ error_div_zero")
+
+                # zero quotient
+                self.emit(f"MOV A, 0")
+                self.emit(f"MOV ({tmp_res}), A")
+                self.mem_accesses += 1
+
+                # division loop using positive operands: subtract tmp_right from tmp_left
+                self.emit(f"{label_div}:")
+                self.emit(f"MOV A, ({tmp_left})")
+                self.mem_accesses += 1
+                self.emit(f"CMP A, ({tmp_right})")
                 self.emit(f"JLT {label_end}")
 
-                self.emit("SUB A, B")
+                self.emit(f"SUB A, ({tmp_right})")
                 self.emit(f"MOV ({tmp_left}), A")
                 self.mem_accesses += 1
 
                 self.emit(f"MOV A, ({tmp_res})")
-                self.emit("ADD A, 1")
+                self.emit(f"ADD A, 1")
                 self.emit(f"MOV ({tmp_res}), A")
                 self.mem_accesses += 2
 
                 self.emit(f"JMP {label_div}")
 
                 self.emit(f"{label_end}:")
+                # apply sign to quotient if flags differ
+                L_NO_NEG = f"L{self.tmp_idx}_DIV_NO_NEG"
+                self.tmp_idx += 1
+                self.emit(f"MOV A, ({tmp_flag_left})")
+                self.mem_accesses += 1
+                self.emit(f"MOV B, ({tmp_flag_right})")
+                self.mem_accesses += 1
+                self.emit("CMP A, B")
+                self.emit(f"JEQ {L_NO_NEG}")
+
+                # negate tmp_res
+                self.emit(f"MOV A, ({tmp_res})")
+                self.mem_accesses += 1
+                self.emit(f"MOV B, A")
+                self.emit(f"MOV A, 0")
+                self.emit(f"SUB A, B")
+                self.emit(f"MOV ({tmp_res}), A")
+                self.mem_accesses += 1
+
+                self.emit(f"{L_NO_NEG}:")
                 self.emit(f"MOV A, ({tmp_res})")
                 self.mem_accesses += 1
                 return
 
             elif node.op == '%':
+                # Modulo with sign handling: remainder has sign of numerator (left),
+                # computed as abs(left) % abs(right) then apply sign of left.
                 tmp_res = f"tmp_mod_res_{self.tmp_idx}"
                 tmp_left = f"tmp_mod_left_{self.tmp_idx}"
+                tmp_right = f"tmp_mod_right_{self.tmp_idx}"
                 self.tmp_idx += 1
-                self.temps.append(tmp_res)
-                self.temps.append(tmp_left)
+                self.temps.extend([tmp_res, tmp_left, tmp_right])
+
+                tmp_flag_left = f"tmp_mod_left_sign_{self.tmp_idx}"
+                tmp_flag_right = f"tmp_mod_right_sign_{self.tmp_idx}"
+                self.tmp_idx += 1
+                self.temps.extend([tmp_flag_left, tmp_flag_right])
 
                 label_div = f"MOD_DIV_{self.tmp_idx}"
                 label_end = f"END_MOD_{self.tmp_idx}"
                 self.tmp_idx += 1
 
+                # store operands
                 self.emit(f"MOV ({tmp_left}), A")
                 self.mem_accesses += 1
-                
-                self.emit("CMP B, 0")
-                self.emit(f"JEQ error_div_zero")
-
-                self.emit("MOV A, 0")
-                self.emit(f"MOV ({tmp_res}), A")
+                self.emit(f"MOV ({tmp_right}), B")
                 self.mem_accesses += 1
 
+                # compute sign and abs(left)
+                L_LEFT_NEG = f"L{self.tmp_idx}_MOD_LEFT_NEG"
+                L_LEFT_DONE = f"L{self.tmp_idx}_MOD_LEFT_DONE"
+                self.tmp_idx += 1
+                self.emit(f"MOV A, ({tmp_left})")
+                self.mem_accesses += 1
+                self.emit(f"CMP A, 128")
+                self.emit(f"JLT {L_LEFT_NEG}")
+                self.emit(f"MOV A, 1")
+                self.emit(f"MOV ({tmp_flag_left}), A")
+                self.mem_accesses += 1
+                self.emit(f"MOV A, ({tmp_left})")
+                self.mem_accesses += 1
+                self.emit(f"MOV B, A")
+                self.emit(f"MOV A, 0")
+                self.emit(f"SUB A, B")
+                self.emit(f"MOV ({tmp_left}), A")
+                self.mem_accesses += 1
+                self.emit(f"JMP {L_LEFT_DONE}")
+                self.emit(f"{L_LEFT_NEG}:")
+                self.emit(f"MOV A, 0")
+                self.emit(f"MOV ({tmp_flag_left}), A")
+                self.mem_accesses += 1
+                self.emit(f"{L_LEFT_DONE}:")
+
+                # compute sign and abs(right)
+                L_RIGHT_NEG = f"L{self.tmp_idx}_MOD_RIGHT_NEG"
+                L_RIGHT_DONE = f"L{self.tmp_idx}_MOD_RIGHT_DONE"
+                self.tmp_idx += 1
+                self.emit(f"MOV A, ({tmp_right})")
+                self.mem_accesses += 1
+                self.emit(f"CMP A, 128")
+                self.emit(f"JLT {L_RIGHT_NEG}")
+                self.emit(f"MOV A, 1")
+                self.emit(f"MOV ({tmp_flag_right}), A")
+                self.mem_accesses += 1
+                self.emit(f"MOV A, ({tmp_right})")
+                self.mem_accesses += 1
+                self.emit(f"MOV B, A")
+                self.emit(f"MOV A, 0")
+                self.emit(f"SUB A, B")
+                self.emit(f"MOV ({tmp_right}), A")
+                self.mem_accesses += 1
+                self.emit(f"JMP {L_RIGHT_DONE}")
+                self.emit(f"{L_RIGHT_NEG}:")
+                self.emit(f"MOV A, 0")
+                self.emit(f"MOV ({tmp_flag_right}), A")
+                self.mem_accesses += 1
+                self.emit(f"{L_RIGHT_DONE}:")
+
+                # check division by zero (abs right)
+                self.emit(f"MOV A, ({tmp_right})")
+                self.mem_accesses += 1
+                self.emit(f"CMP A, 0")
+                self.emit(f"JEQ error_div_zero")
+
+                # modulo loop: subtract tmp_right from tmp_left until less than
                 self.emit(f"{label_div}:")
                 self.emit(f"MOV A, ({tmp_left})")
                 self.mem_accesses += 1
-                
-                self.emit("CMP A, B")
+                self.emit(f"CMP A, ({tmp_right})")
                 self.emit(f"JLT {label_end}")
 
-                self.emit("SUB A, B")
+                self.emit(f"SUB A, ({tmp_right})")
                 self.emit(f"MOV ({tmp_left}), A")
                 self.mem_accesses += 1
-
-                self.emit(f"MOV A, ({tmp_res})") 
-                self.emit("ADD A, 1")
-                self.emit(f"MOV ({tmp_res}), A")
-                self.mem_accesses += 2
 
                 self.emit(f"JMP {label_div}")
 
                 self.emit(f"{label_end}:")
+                # result in tmp_left (abs remainder); apply sign of original left
+                L_NO_NEG = f"L{self.tmp_idx}_MOD_NO_NEG"
+                self.tmp_idx += 1
+                self.emit(f"MOV A, ({tmp_flag_left})")
+                self.mem_accesses += 1
+                self.emit(f"CMP A, 0")
+                self.emit(f"JEQ {L_NO_NEG}")
+
+                # negate remainder
+                self.emit(f"MOV A, ({tmp_left})")
+                self.mem_accesses += 1
+                self.emit(f"MOV B, A")
+                self.emit(f"MOV A, 0")
+                self.emit(f"SUB A, B")
+                self.emit(f"MOV ({tmp_left}), A")
+                self.mem_accesses += 1
+
+                self.emit(f"{L_NO_NEG}:")
                 self.emit(f"MOV A, ({tmp_left})")
                 self.mem_accesses += 1
                 return

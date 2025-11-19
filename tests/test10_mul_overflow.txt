@@ -1,0 +1,9 @@
+DATA:
+v_a 50
+v_b 3
+error 0
+result 0
+
+EXPR:
+# Multiplication overflow: 50 * 3 = 150 -> overflow for signed 8-bit
+result = a * b

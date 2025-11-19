@@ -1,0 +1,9 @@
+DATA:
+v_a -7
+v_b 3
+error 0
+result 0
+
+EXPR:
+# Division with negative numerator: -7 / 3 -> -2 (trunc toward zero), remainder -1
+result = a / b

@@ -1,0 +1,9 @@
+DATA:
+v_a 100
+v_b 50
+error 0
+result 0
+
+EXPR:
+# Addition overflow positive: 100 + 50 = 150 -> overflow
+result = a + b

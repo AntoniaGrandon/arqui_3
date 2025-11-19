@@ -1,12 +1,11 @@
 DATA:
-v_a 10
-v_b 30
-v_c 5
-v_d 1
+v_a 60
+v_b 3
+v_c 8
 error 0
 result 0
 
 EXPR:
-result = max(a + b * c, d * (a - b))
+result = a*b+c
 
-# Expected: b*c = 30*5 = 150 -> overflow of 8-bit signed during multiplication -> error=1, result=0 (overflow)
+# Expected: error=1, result=0 (overflow)

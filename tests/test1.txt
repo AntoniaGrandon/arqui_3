@@ -1,12 +1,12 @@
 DATA:
-v_a 2
+v_a 10
 v_b 3
-v_c 4
-v_d 1
+v_c 61
+v_d 10
 error 0
 result 0
 
 EXPR:
-result = max(a + b * c, d * (a - b))
+result = (a%b)+(c/d)*d-a+a
 
-# Expected: a + b*c = 2 + 3*4 = 14 ; d*(a-b)=1*(2-3)=-1 -> max=14 ; error=0, result=14
+# Expected: error=0, result=61
