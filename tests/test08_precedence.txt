@@ -1,9 +1,0 @@
-DATA:
-v_a 1
-v_b 2
-v_c 3
-error 0
-result 0
-
-# Should compute a + (b * c) = 1 + (2*3) = 7
-result = a + b * c

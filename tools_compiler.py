@@ -350,66 +350,189 @@ class CodeGen:
                 self.emit(f"MOV A, ({tmp_result_val})")
                 self.mem_accesses += 1
 
-            elif node.op == '*': 
+            elif node.op == '*':
+                # Robust multiplication using only memory temporaries (no PUSH/POP)
+                # Save operands to temporaries, compute absolute values there,
+                # perform repeated addition using the temporaries, then apply sign.
                 tmp_res = f"tmp_mul_{self.tmp_idx}"
                 tmp_left = f"tmp_mul_left_{self.tmp_idx}"
+                tmp_right = f"tmp_mul_right_{self.tmp_idx}"
                 self.tmp_idx += 1
-                self.temps.append(tmp_res)
-                self.temps.append(tmp_left)
+                self.temps.extend([tmp_res, tmp_left, tmp_right])
 
                 label_mul = f"MUL_{self.tmp_idx}"
                 label_end = f"END_MUL_{self.tmp_idx}"
                 self.tmp_idx += 1
+
+                tmp_flag_left = f"tmp_mul_left_sign_{self.tmp_idx}"
+                tmp_flag_right = f"tmp_mul_right_sign_{self.tmp_idx}"
+                tmp_sign = f"tmp_mul_sign_{self.tmp_idx}"
+                self.tmp_idx += 1
+                self.temps.extend([tmp_flag_left, tmp_flag_right, tmp_sign])
+
+                # store operands into memory (A=left, B=right)
                 self.emit(f"MOV ({tmp_left}), A")
                 self.mem_accesses += 1
+                self.emit(f"MOV ({tmp_right}), B")
+                self.mem_accesses += 1
 
-                self.emit("MOV A, 0")
+                # compute abs(left) into tmp_left and flag
+                L_LEFT_NEG = f"L{self.tmp_idx}_MUL_LEFT_NEG"
+                L_LEFT_DONE = f"L{self.tmp_idx}_MUL_LEFT_DONE"
+                self.tmp_idx += 1
+                self.emit(f"MOV A, ({tmp_left})")
+                self.mem_accesses += 1
+                self.emit(f"CMP A, 128")
+                self.emit(f"JLT {L_LEFT_NEG}")
+                # negative
+                self.emit(f"MOV A, 1")
+                self.emit(f"MOV ({tmp_flag_left}), A")
+                self.mem_accesses += 1
+                self.emit(f"MOV A, ({tmp_left})")
+                self.mem_accesses += 1
+                self.emit(f"MOV B, A")
+                self.emit(f"MOV A, 0")
+                self.emit(f"SUB A, B")
+                self.emit(f"MOV ({tmp_left}), A")
+                self.mem_accesses += 1
+                self.emit(f"JMP {L_LEFT_DONE}")
+                self.emit(f"{L_LEFT_NEG}:")
+                # non-negative
+                self.emit(f"MOV A, 0")
+                self.emit(f"MOV ({tmp_flag_left}), A")
+                self.mem_accesses += 1
+                self.emit(f"{L_LEFT_DONE}:")
+
+                # compute abs(right) into tmp_right and flag
+                L_RIGHT_NEG = f"L{self.tmp_idx}_MUL_RIGHT_NEG"
+                L_RIGHT_DONE = f"L{self.tmp_idx}_MUL_RIGHT_DONE"
+                self.tmp_idx += 1
+                self.emit(f"MOV A, ({tmp_right})")
+                self.mem_accesses += 1
+                self.emit(f"CMP A, 128")
+                self.emit(f"JLT {L_RIGHT_NEG}")
+                # negative
+                self.emit(f"MOV A, 1")
+                self.emit(f"MOV ({tmp_flag_right}), A")
+                self.mem_accesses += 1
+                self.emit(f"MOV A, ({tmp_right})")
+                self.mem_accesses += 1
+                self.emit(f"MOV B, A")
+                self.emit(f"MOV A, 0")
+                self.emit(f"SUB A, B")
+                self.emit(f"MOV ({tmp_right}), A")
+                self.mem_accesses += 1
+                self.emit(f"JMP {L_RIGHT_DONE}")
+                self.emit(f"{L_RIGHT_NEG}:")
+                # non-negative
+                self.emit(f"MOV A, 0")
+                self.emit(f"MOV ({tmp_flag_right}), A")
+                self.mem_accesses += 1
+                self.emit(f"{L_RIGHT_DONE}:")
+
+                # zero result
+                self.emit(f"MOV A, 0")
                 self.emit(f"MOV ({tmp_res}), A")
                 self.mem_accesses += 1
 
-                tmp_sign = f"tmp_mul_sign_{self.tmp_idx}"
+                # compute sign = flag_left xor flag_right
+                L_SIGN_NO = f"L{self.tmp_idx}_MUL_SIGN_NO"
                 self.tmp_idx += 1
-                self.temps.append(tmp_sign)
-
-                L_B_POS = f"L{self.tmp_idx}_MUL_B_POS"
-                L_AFTER_SIGN = f"L{self.tmp_idx}_MUL_AFTER_SIGN"
-
-                self.emit(f"MOV A, 0")
-                self.emit(f"MOV ({tmp_sign}), A")
+                self.emit(f"MOV A, ({tmp_flag_left})")
                 self.mem_accesses += 1
-
-                self.emit(f"CMP B, 128")
-                self.emit(f"JLT {L_B_POS}")
+                self.emit(f"MOV B, ({tmp_flag_right})")
+                self.mem_accesses += 1
+                self.emit("CMP A, B")
+                self.emit(f"JEQ {L_SIGN_NO}")
                 self.emit(f"MOV A, 1")
                 self.emit(f"MOV ({tmp_sign}), A")
                 self.mem_accesses += 1
-                self.emit(f"MOV A, B")
-                self.emit(f"MOV B, 0")
-                self.emit(f"SUB B, A")
-                self.emit(f"JMP {L_AFTER_SIGN}")
+                self.emit(f"{L_SIGN_NO}:")
 
-                self.emit(f"{L_B_POS}:")
-                self.emit(f"{L_AFTER_SIGN}:")
-
+                # multiplication loop: add abs(left) tmp_right times
+                # Use memory-held counter ({tmp_right}) to avoid clobbering register B
                 self.emit(f"{label_mul}:")
-                self.emit("CMP B, 0")
+                # load loop counter from memory into A and test for zero
+                self.emit(f"MOV A, ({tmp_right})")
+                self.mem_accesses += 1
+                self.emit("CMP A, 0")
                 self.emit(f"JEQ {label_end}")
 
-                self.emit(f"MOV A, ({tmp_res})")
-                self.emit(f"ADD A, ({tmp_left})")
-                self.emit(f"MOV ({tmp_res}), A")
-                self.mem_accesses += 2
+                # Check overflow for A = ({tmp_res}) + ({tmp_left}) before performing it
+                chk_idx = self.tmp_idx
+                self.tmp_idx += 1
+                L_A_POS = f"L{chk_idx}_MULCHK_A_POS"
+                L_A_NEG = f"L{chk_idx}_MULCHK_A_NEG"
+                L_SKIP = f"L{chk_idx}_MULCHK_SKIP"
+                L_AFTER = f"L{chk_idx}_MULCHK_AFTER"
 
+                # load operands into A and B for the overflow check
+                self.emit(f"MOV A, ({tmp_res})")
+                self.mem_accesses += 1
+                self.emit(f"MOV B, ({tmp_left})")
+                self.mem_accesses += 1
+
+                self.emit(f"CMP A, 128")
+                self.emit(f"JLT {L_A_POS}")
+
+                self.emit(f"{L_A_NEG}:")
+                self.emit(f"CMP B, 128")
+                self.emit(f"JLT {L_SKIP}")
+                self.emit(f"MOV A, -128")
+                self.emit(f"SUB A, B")
+                self.emit(f"MOV B, A")
+                self.emit(f"MOV A, ({tmp_res})")
+                self.mem_accesses += 1
+                self.emit(f"CMP A, B")
+                self.emit(f"JLT error_overflow")
+                self.emit(f"MOV B, ({tmp_left})")
+                self.mem_accesses += 1
+                self.emit(f"ADD A, B")
+                self.emit(f"JMP {L_AFTER}")
+
+                self.emit(f"{L_A_POS}:")
+                self.emit(f"CMP B, 128")
+                self.emit(f"JGE {L_SKIP}")
+                self.emit(f"MOV A, 127")
+                self.emit(f"SUB A, B")
+                self.emit(f"MOV B, A")
+                self.emit(f"MOV A, ({tmp_res})")
+                self.mem_accesses += 1
+                self.emit(f"CMP A, B")
+                self.emit(f"JGT error_overflow")
+                self.emit(f"MOV B, ({tmp_left})")
+                self.mem_accesses += 1
+                self.emit(f"ADD A, B")
+                self.emit(f"JMP {L_AFTER}")
+
+                self.emit(f"{L_SKIP}:")
+                self.emit(f"MOV A, ({tmp_res})")
+                self.mem_accesses += 1
+                self.emit(f"MOV B, ({tmp_left})")
+                self.mem_accesses += 1
+                self.emit(f"ADD A, B")
+                self.emit(f"{L_AFTER}:")
+
+                # store back and continue loop
+                self.emit(f"MOV ({tmp_res}), A")
+                self.mem_accesses += 1
+                # decrement the memory-held counter ({tmp_right}) and loop
+                self.emit(f"MOV B, ({tmp_right})")
+                self.mem_accesses += 1
                 self.emit("SUB B, 1")
+                self.emit(f"MOV ({tmp_right}), B")
+                self.mem_accesses += 1
                 self.emit(f"JMP {label_mul}")
 
                 self.emit(f"{label_end}:")
                 self.emit(f"MOV A, ({tmp_res})")
                 self.mem_accesses += 1
 
+                # apply sign if needed
+                L_NO_NEG = f"L{self.tmp_idx}_MUL_NO_NEG"
+                self.tmp_idx += 1
                 self.emit(f"MOV B, ({tmp_sign})")
                 self.mem_accesses += 1
-                L_NO_NEG = f"L{self.tmp_idx}_MUL_NO_NEG"
                 self.emit(f"CMP B, 0")
                 self.emit(f"JEQ {L_NO_NEG}")
                 self.emit(f"MOV B, A")
@@ -573,7 +696,8 @@ class CodeGen:
         raise ValueError(f"Unknown node type: {node}")
 
 def parse_input_text(text):
-    m = re.search(r"DATA:\s*(.*?)\n\n", text, re.S)
+    # Find DATA block: accept either LF or CRLF blank line separators
+    m = re.search(r"DATA:\s*(.*?)\r?\n\r?\n", text, re.S)
     data_block = ''
     if m:
         data_block = m.group(1)
@@ -581,7 +705,7 @@ def parse_input_text(text):
         if 'DATA:' in text:
             start = text.index('DATA:')+5
             rest = text[start:]
-            parts = re.split(r"\n\s*\n", rest, 1)
+            parts = re.split(r"\r?\n\s*\r?\n", rest, 1)
             data_block = parts[0]
     data = {}
     short_map = {}
@@ -598,13 +722,29 @@ def parse_input_text(text):
                 short = m.group(1)
                 short_map[short] = name
                 
-    matches = list(re.finditer(r"result\s*=\s*(.*)", text))
-    if matches:
-        expr = matches[-1].group(1).strip()
+    # Extract expression: prefer explicit 'result = ...' lines; otherwise use EXPR: block
+    # Prefer a standalone line starting with 'result = ...' (anchored to line start)
+    # This avoids accidentally matching occurrences inside comments like
+    # '# ... result=0 (overflow)'. Use multiline anchor so we only capture
+    # the intended expression line.
+    m = re.search(r"(?m)^\s*result\s*=\s*(.+)$", text)
+    if m:
+        expr = m.group(1).strip()
     else:
         m3 = re.search(r"EXPR:\s*(.*)", text, re.S)
         if m3:
-            expr = m3.group(1).strip()
+            rest = m3.group(1)
+            expr = None
+            for line in rest.splitlines():
+                line = line.strip()
+                if not line:
+                    continue
+                if line.startswith('#'):
+                    continue
+                expr = line
+                break
+            if expr is None:
+                raise ValueError('No expression found after EXPR:')
         else:
             raise ValueError('No expression found (line with "result = ...")')
     return data, expr, short_map

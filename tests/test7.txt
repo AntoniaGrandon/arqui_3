@@ -1,0 +1,12 @@
+DATA:
+v_a -100
+v_b 100
+v_c 1
+v_d 1
+error 0
+result 0
+
+EXPR:
+result = max(a + b * c, d * (a - b))
+
+# Expected: a-b = -100 - 100 = -200 -> overflow in subtraction -> error=1, result=0

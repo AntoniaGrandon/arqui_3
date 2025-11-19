@@ -1,8 +1,0 @@
-DATA:
-v_a 127
-v_b 1
-error 0
-result 0
-
-# This should overflow 8-bit signed: 127 + 1 -> overflow -> error=1, result=0
-result = a + b

@@ -1,8 +1,0 @@
-DATA:
-v_a 64
-v_b 4
-error 0
-result 0
-
-# Multiplication that wraps: 64 * 4 = 256 -> 0 (no overflow flag is implemented for *)
-result = a * b

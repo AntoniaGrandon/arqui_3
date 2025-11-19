@@ -1,7 +1,0 @@
-DATA:
-v_a 10
-v_b 3
-error 0
-result 0
-
-result = a % b

@@ -1,0 +1,14 @@
+DATA:
+v_a 5
+v_b 3
+v_c 4
+v_d 2
+error 0
+result 0
+
+EXPR:
+# Test 8: combina todas las operaciones: +, -, *, /, %, max, min, abs y paréntesis
+result = max(a + b * c - d % b, min(abs(a - b), c / d))
+
+# Expected: ejerce suma, resta, multiplicación, división entera, módulo, min, max y abs.
+# No overflow ni división por cero esperados con estos valores.

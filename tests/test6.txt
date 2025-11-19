@@ -1,0 +1,12 @@
+DATA:
+v_a -50
+v_b -60
+v_c 1
+v_d 2
+error 0
+result 0
+
+EXPR:
+result = max(a + b * c, d * (a - b))
+
+# Expected: a + b*c = -50 + (-60)*1 = -110 ; a-b = -50 - (-60) = 10 ; d*(a-b)=2*10=20 -> max=20 ; error=0, result=20
